@@ -37,7 +37,7 @@ const ShortcutCard = (props: Props) => {
   return (
     <div
       className={classNames(
-        "group px-4 py-3 w-full flex flex-col justify-start items-start border rounded-lg hover:shadow dark:border-zinc-700",
+        "group px-4 py-3 w-full flex flex-col justify-start items-start border rounded-lg hover:shadow dark:border-zinc-700 min-h-[140px]",
       )}
     >
       <div className="w-full flex flex-row justify-between items-center">
@@ -91,6 +91,13 @@ const ShortcutCard = (props: Props) => {
         <div className="h-full pt-2 flex flex-row justify-end items-start">
           <ShortcutActionsDropdown shortcut={shortcut} />
         </div>
+      </div>
+      <div className="mt-2 w-full min-h-[40px] flex items-start">
+        {shortcut.description && shortcut.description.trim() !== "" && (
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            {shortcut.description}
+          </p>
+        )}
       </div>
       <div className="mt-2 w-full flex flex-row justify-start items-start gap-2 truncate">
         {shortcut.tags.map((tag) => {
