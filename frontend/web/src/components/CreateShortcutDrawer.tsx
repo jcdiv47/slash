@@ -88,6 +88,19 @@ const CreateShortcutDrawer: React.FC<Props> = (props: Props) => {
     return null;
   }
 
+  const generateRandomSlug = () => {
+    const chars = "abcdefghijklmnopqrstuvwxyz";
+    let slug = "";
+    for (let i = 0; i < 3; i++) {
+      slug += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setPartialState({
+      shortcutCreate: Object.assign(state.shortcutCreate, {
+        name: slug,
+      }),
+    });
+  };
+
   const handleNameInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPartialState({
       shortcutCreate: Object.assign(state.shortcutCreate, {
@@ -217,6 +230,17 @@ const CreateShortcutDrawer: React.FC<Props> = (props: Props) => {
               placeholder="An easy name to remember"
               value={state.shortcutCreate.name}
               onChange={handleNameInputChange}
+              endDecorator={
+                <Button
+                  size="sm"
+                  variant="plain"
+                  color="neutral"
+                  onClick={generateRandomSlug}
+                  title="Generate random 3-letter slug"
+                >
+                  <Icon.Sparkles className="w-4 h-4" />
+                </Button>
+              }
             />
           </div>
           <div className="w-full flex flex-col justify-start items-start mb-3">
