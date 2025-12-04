@@ -6,8 +6,5 @@ services:
     ports:
       - 5231:5231
     volumes:
-      - slash:/var/opt/slash
+      - $HOME/.slash:/var/opt/slash
     restart: unless-stopped
-
-volumes:
-  slash:
