@@ -104,10 +104,10 @@ const ShortcutCard = (props: Props) => {
           return (
             <span
               key={tag}
-              className="max-w-[8rem] truncate text-gray-400 dark:text-gray-500 text-sm leading-4 cursor-pointer hover:opacity-80"
+              className="max-w-[8rem] truncate px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 text-xs leading-5 cursor-pointer hover:opacity-80"
               onClick={() => viewStore.setFilter({ tag: tag })}
             >
-              #{tag}
+              {tag}
             </span>
           );
         })}
