@@ -1,4 +1,4 @@
-import { Button, Checkbox, DialogActions, DialogContent, DialogTitle, Divider, Drawer, Input, ModalClose, Textarea } from "@mui/joy";
+import { Button, Checkbox, Divider, Input, Modal, ModalDialog, Textarea } from "@mui/joy";
 import classnames from "classnames";
 import { isUndefined, uniq } from "lodash-es";
 import { useEffect, useState } from "react";
@@ -214,11 +214,15 @@ const CreateShortcutDrawer: React.FC<Props> = (props: Props) => {
   };
 
   return (
-    <Drawer anchor="right" open={true} onClose={onClose}>
-      <DialogTitle>{isCreating ? "Create Shortcut" : "Edit Shortcut"}</DialogTitle>
-      <ModalClose />
-      <DialogContent className="w-full max-w-full">
-        <div className="overflow-y-auto w-full mt-2 px-4 pb-4 sm:w-[24rem]">
+    <Modal open={true} onClose={onClose}>
+      <ModalDialog className="w-1/3 min-w-96 max-h-[90vh] overflow-hidden">
+        <div className="flex flex-row justify-between items-center mb-4">
+          <span className="text-lg font-medium">{isCreating ? "Create Shortcut" : "Edit Shortcut"}</span>
+          <Button variant="plain" onClick={onClose}>
+            <Icon.X className="w-5 h-auto text-gray-600" />
+          </Button>
+        </div>
+        <div className="overflow-y-auto w-full flex-1 px-1">
           <div className="w-full flex flex-col justify-start items-start mb-3">
             <span className="mb-2">
               Name <span className="text-red-600">*</span>
@@ -365,9 +369,7 @@ const CreateShortcutDrawer: React.FC<Props> = (props: Props) => {
             )}
           </div>
         </div>
-      </DialogContent>
-      <DialogActions>
-        <div className="w-full flex flex-row justify-end items-center px-3 py-4 space-x-2">
+        <div className="w-full flex flex-row justify-end items-center mt-4 space-x-2">
           <Button color="neutral" variant="plain" disabled={requestState.isLoading} loading={requestState.isLoading} onClick={onClose}>
             {t("common.cancel")}
           </Button>
@@ -375,8 +377,8 @@ const CreateShortcutDrawer: React.FC<Props> = (props: Props) => {
             {t("common.save")}
           </Button>
         </div>
-      </DialogActions>
-    </Drawer>
+      </ModalDialog>
+    </Modal>
   );
 };
 
