@@ -7,7 +7,6 @@ tags:
   - name: AuthService
   - name: CollectionService
   - name: ShortcutService
-  - name: SubscriptionService
   - name: UserSettingService
   - name: WorkspaceService
 consumes:
@@ -708,55 +707,6 @@ paths:
             $ref: '#/definitions/apiv1WorkspaceSetting'
       tags:
         - WorkspaceService
-  /v1/subscription:
-    get:
-      summary: GetSubscription gets the current subscription of Slash instance.
-      operationId: SubscriptionService_GetSubscription
-      responses:
-        "200":
-          description: A successful response.
-          schema:
-            $ref: '#/definitions/v1Subscription'
-        default:
-          description: An unexpected error response.
-          schema:
-            $ref: '#/definitions/rpcStatus'
-      tags:
-        - SubscriptionService
-    delete:
-      summary: DeleteSubscription deletes the subscription.
-      operationId: SubscriptionService_DeleteSubscription
-      responses:
-        "200":
-          description: A successful response.
-          schema:
-            $ref: '#/definitions/v1Subscription'
-        default:
-          description: An unexpected error response.
-          schema:
-            $ref: '#/definitions/rpcStatus'
-      tags:
-        - SubscriptionService
-    patch:
-      summary: UpdateSubscription updates the subscription.
-      operationId: SubscriptionService_UpdateSubscription
-      responses:
-        "200":
-          description: A successful response.
-          schema:
-            $ref: '#/definitions/v1Subscription'
-        default:
-          description: An unexpected error response.
-          schema:
-            $ref: '#/definitions/rpcStatus'
-      parameters:
-        - name: body
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/v1UpdateSubscriptionRequest'
-      tags:
-        - SubscriptionService
 definitions:
   GetShortcutAnalyticsResponseAnalyticsItem:
     type: object
@@ -1025,14 +975,6 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/v1User'
-  v1PlanType:
-    type: string
-    enum:
-      - PLAN_TYPE_UNSPECIFIED
-      - FREE
-      - PRO
-      - ENTERPRISE
-    default: PLAN_TYPE_UNSPECIFIED
   v1Role:
     type: string
     enum:
@@ -1056,44 +998,6 @@ definitions:
       - ACTIVE
       - INACTIVE
     default: STATE_UNSPECIFIED
-  v1Subscription:
-    type: object
-    properties:
-      plan:
-        $ref: '#/definitions/v1PlanType'
-        readOnly: true
-      startedTime:
-        type: string
-        format: date-time
-        readOnly: true
-      expiresTime:
-        type: string
-        format: date-time
-        readOnly: true
-      features:
-        type: array
-        items:
-          type: string
-        readOnly: true
-      seats:
-        type: integer
-        format: int32
-        readOnly: true
-      shortcutsLimit:
-        type: integer
-        format: int32
-        readOnly: true
-      collectionsLimit:
-        type: integer
-        format: int32
-        readOnly: true
-  v1UpdateSubscriptionRequest:
-    type: object
-    properties:
-      licenseKey:
-        type: string
-    required:
-      - licenseKey
   v1User:
     type: object
     properties:
@@ -1143,9 +1047,6 @@ definitions:
         title: |-
           The owner name.
           Format: "users/{id}"
-      subscription:
-        $ref: '#/definitions/v1Subscription'
-        description: The workspace subscription.
       branding:
         type: string
         format: byte

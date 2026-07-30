@@ -497,7 +497,6 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | secret_session | [string](#string) |  |  |
-| license_key | [string](#string) |  |  |
 | instance_url | [string](#string) |  |  |
 | branding | [bytes](#bytes) |  |  |
 
@@ -566,7 +565,6 @@
 | WORKSPACE_SETTING_SECURITY | 2 | Workspace security settings. |
 | WORKSPACE_SETTING_SHORTCUT_RELATED | 3 | Workspace shortcut-related settings. |
 | WORKSPACE_SETTING_IDENTITY_PROVIDER | 4 | Workspace identity provider settings. |
-| WORKSPACE_SETTING_LICENSE_KEY | 10 | TODO: remove the following keys. The license key. |
 | WORKSPACE_SETTING_SECRET_SESSION | 11 | The secret session key used to encrypt session data. |
 | WORKSPACE_SETTING_DEFAULT_VISIBILITY | 13 | The default visibility of shortcuts and collections. |
 

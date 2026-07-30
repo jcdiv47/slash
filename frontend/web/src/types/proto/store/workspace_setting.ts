@@ -21,11 +21,6 @@ export enum WorkspaceSettingKey {
   WORKSPACE_SETTING_SHORTCUT_RELATED = "WORKSPACE_SETTING_SHORTCUT_RELATED",
   /** WORKSPACE_SETTING_IDENTITY_PROVIDER - Workspace identity provider settings. */
   WORKSPACE_SETTING_IDENTITY_PROVIDER = "WORKSPACE_SETTING_IDENTITY_PROVIDER",
-  /**
-   * WORKSPACE_SETTING_LICENSE_KEY - TODO: remove the following keys.
-   * The license key.
-   */
-  WORKSPACE_SETTING_LICENSE_KEY = "WORKSPACE_SETTING_LICENSE_KEY",
   /** WORKSPACE_SETTING_SECRET_SESSION - The secret session key used to encrypt session data. */
   WORKSPACE_SETTING_SECRET_SESSION = "WORKSPACE_SETTING_SECRET_SESSION",
   /** WORKSPACE_SETTING_DEFAULT_VISIBILITY - The default visibility of shortcuts and collections. */
@@ -50,9 +45,6 @@ export function workspaceSettingKeyFromJSON(object: any): WorkspaceSettingKey {
     case 4:
     case "WORKSPACE_SETTING_IDENTITY_PROVIDER":
       return WorkspaceSettingKey.WORKSPACE_SETTING_IDENTITY_PROVIDER;
-    case 10:
-    case "WORKSPACE_SETTING_LICENSE_KEY":
-      return WorkspaceSettingKey.WORKSPACE_SETTING_LICENSE_KEY;
     case 11:
     case "WORKSPACE_SETTING_SECRET_SESSION":
       return WorkspaceSettingKey.WORKSPACE_SETTING_SECRET_SESSION;
@@ -78,8 +70,6 @@ export function workspaceSettingKeyToNumber(object: WorkspaceSettingKey): number
       return 3;
     case WorkspaceSettingKey.WORKSPACE_SETTING_IDENTITY_PROVIDER:
       return 4;
-    case WorkspaceSettingKey.WORKSPACE_SETTING_LICENSE_KEY:
-      return 10;
     case WorkspaceSettingKey.WORKSPACE_SETTING_SECRET_SESSION:
       return 11;
     case WorkspaceSettingKey.WORKSPACE_SETTING_DEFAULT_VISIBILITY:
@@ -101,7 +91,6 @@ export interface WorkspaceSetting {
 
 export interface WorkspaceSetting_GeneralSetting {
   secretSession: string;
-  licenseKey: string;
   instanceUrl: string;
   branding: Uint8Array;
 }
@@ -241,16 +230,13 @@ export const WorkspaceSetting: MessageFns<WorkspaceSetting> = {
 };
 
 function createBaseWorkspaceSetting_GeneralSetting(): WorkspaceSetting_GeneralSetting {
-  return { secretSession: "", licenseKey: "", instanceUrl: "", branding: new Uint8Array(0) };
+  return { secretSession: "", instanceUrl: "", branding: new Uint8Array(0) };
 }
 
 export const WorkspaceSetting_GeneralSetting: MessageFns<WorkspaceSetting_GeneralSetting> = {
   encode(message: WorkspaceSetting_GeneralSetting, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.secretSession !== "") {
       writer.uint32(10).string(message.secretSession);
-    }
-    if (message.licenseKey !== "") {
-      writer.uint32(18).string(message.licenseKey);
     }
     if (message.instanceUrl !== "") {
       writer.uint32(26).string(message.instanceUrl);
@@ -274,14 +260,6 @@ export const WorkspaceSetting_GeneralSetting: MessageFns<WorkspaceSetting_Genera
           }
 
           message.secretSession = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.licenseKey = reader.string();
           continue;
         }
         case 3: {
@@ -315,7 +293,6 @@ export const WorkspaceSetting_GeneralSetting: MessageFns<WorkspaceSetting_Genera
   fromPartial(object: DeepPartial<WorkspaceSetting_GeneralSetting>): WorkspaceSetting_GeneralSetting {
     const message = createBaseWorkspaceSetting_GeneralSetting();
     message.secretSession = object.secretSession ?? "";
-    message.licenseKey = object.licenseKey ?? "";
     message.instanceUrl = object.instanceUrl ?? "";
     message.branding = object.branding ?? new Uint8Array(0);
     return message;

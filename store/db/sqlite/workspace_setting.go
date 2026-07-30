@@ -123,7 +123,6 @@ func (d *DB) ListWorkspaceSettings(ctx context.Context, find *store.FindWorkspac
 				IdentityProvider: workspaceSettingIdentityProvider,
 			}
 		} else if slices.Contains([]storepb.WorkspaceSettingKey{
-			storepb.WorkspaceSettingKey_WORKSPACE_SETTING_LICENSE_KEY,
 			storepb.WorkspaceSettingKey_WORKSPACE_SETTING_SECRET_SESSION,
 			storepb.WorkspaceSettingKey_WORKSPACE_SETTING_DEFAULT_VISIBILITY,
 		}, workspaceSetting.Key) {

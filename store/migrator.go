@@ -336,13 +336,7 @@ func (s *Store) migrateWorkspaceSettings(ctx context.Context) error {
 	}
 	updateWorkspaceSetting := false
 	for _, workspaceSetting := range workspaceSettings {
-		if workspaceSetting.Key == storepb.WorkspaceSettingKey_WORKSPACE_SETTING_LICENSE_KEY {
-			workspaceGeneralSetting.LicenseKey = workspaceSetting.Raw
-			updateWorkspaceSetting = true
-			if err := s.DeleteWorkspaceSetting(ctx, storepb.WorkspaceSettingKey_WORKSPACE_SETTING_LICENSE_KEY); err != nil {
-				return err
-			}
-		} else if workspaceSetting.Key == storepb.WorkspaceSettingKey_WORKSPACE_SETTING_SECRET_SESSION {
+		if workspaceSetting.Key == storepb.WorkspaceSettingKey_WORKSPACE_SETTING_SECRET_SESSION {
 			workspaceGeneralSetting.SecretSession = workspaceSetting.Raw
 			updateWorkspaceSetting = true
 			if err := s.DeleteWorkspaceSetting(ctx, storepb.WorkspaceSettingKey_WORKSPACE_SETTING_SECRET_SESSION); err != nil {
