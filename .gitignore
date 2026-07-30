@@ -4,6 +4,9 @@ tmp
 # build folder
 build
 
+# local dev database, created by `--data ./.data`
+.data/
+
 .DS_Store
 
 node_modules
