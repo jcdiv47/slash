@@ -1,8 +1,8 @@
-import classNames from "classnames";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { generateRandomString } from "@/helpers/utils";
+import { cn } from "@/lib/utils";
 import Icon from "./Icon";
 
 interface Props {
@@ -29,14 +29,14 @@ const ResourceNameInput = (props: Props) => {
 
   return (
     <div className="w-full flex flex-col justify-start items-start mb-3">
-      <div className={classNames("", modified ? "mb-2" : "flex flex-row justify-start items-center")}>
+      <div className={cn(modified ? "mb-2" : "flex flex-row justify-start items-center")}>
         <span>Name</span>
         {modified ? (
-          <span className="text-red-600"> *</span>
+          <span className="text-destructive"> *</span>
         ) : (
           <>
             <span>:</span>
-            <span className="ml-1 font-mono font-medium">{editingName}</span>
+            <span className="shortcut-name ml-1 font-medium">{editingName}</span>
             <div className="ml-1 flex flex-row justify-start items-center">
               <Button size="icon" variant="ghost" onClick={() => setModified(true)}>
                 <Icon.Edit className="w-4 h-auto text-muted-foreground" />

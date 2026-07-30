@@ -6,6 +6,7 @@ import FilterView from "@/components/FilterView";
 import Icon from "@/components/Icon";
 import ShortcutsContainer from "@/components/ShortcutsContainer";
 import ShortcutsNavigator from "@/components/ShortcutsNavigator";
+import ViewSetting from "@/components/ViewSetting";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useLoading from "@/hooks/useLoading";
@@ -59,8 +60,9 @@ const ShortcutDashboard: React.FC = () => {
               onChange={(e) => viewStore.setFilter({ search: e.target.value })}
             />
           </div>
-          <div className="flex flex-row justify-end items-center">
-            <Button className="hover:shadow" variant="secondary" size="sm" onClick={() => setShowCreateShortcutDrawer(true)}>
+          <div className="flex flex-row justify-end items-center gap-3">
+            <ViewSetting />
+            <Button variant="default" size="sm" onClick={() => setShowCreateShortcutDrawer(true)}>
               <Icon.Plus className="w-5 h-auto" />
               <span className="ml-0.5">{t("common.create")}</span>
             </Button>
@@ -77,7 +79,7 @@ const ShortcutDashboard: React.FC = () => {
             <Icon.PackageOpen size={64} strokeWidth={1} />
             <p className="mt-2">No shortcuts found.</p>
             <a
-              className="text-blue-600 border-t border-border text-sm hover:underline flex flex-row justify-center items-center mt-4 pt-2"
+              className="text-foreground border-t border-border text-sm hover:underline flex flex-row justify-center items-center mt-4 pt-2"
               href="https://github.com/yourselfhosted/slash/blob/main/docs/getting-started/shortcuts.md"
               target="_blank"
             >

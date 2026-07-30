@@ -43,7 +43,7 @@ const AccessTokenSection = () => {
     showCommonDialog({
       title: "Delete Access Token",
       content: `Are you sure to delete access token \`${getFormatedAccessToken(accessToken)}\`? You cannot undo this action.`,
-      style: "danger",
+      style: "destructive",
       onConfirm: async () => {
         await userServiceClient.deleteUserAccessToken({
           id: currentUser.id,

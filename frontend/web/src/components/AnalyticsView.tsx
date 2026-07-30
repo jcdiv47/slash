@@ -1,7 +1,7 @@
-import classNames from "classnames";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { shortcutServiceClient } from "@/grpcweb";
+import { cn } from "@/lib/utils";
 import { GetShortcutAnalyticsResponse } from "@/types/proto/api/v1/shortcut_service";
 import Icon from "./Icon";
 
@@ -23,12 +23,12 @@ const AnalyticsView: React.FC<Props> = (props: Props) => {
   }, []);
 
   return (
-    <div className={classNames("relative w-full", className)}>
+    <div className={cn("relative w-full", className)}>
       {analytics ? (
         <>
           <div className="w-full">
             <p className="w-full h-8 px-2 text-muted-foreground">{t("analytics.top-sources")}</p>
-            <div className="w-full mt-1 overflow-hidden shadow ring-1 ring-border rounded-lg">
+            <div className="w-full mt-1 overflow-hidden ring-1 ring-border rounded-md">
               <div className="w-full divide-y divide-border">
                 <div className="w-full flex flex-row justify-between items-center">
                   <span className="py-2 px-2 text-left font-semibold text-sm text-muted-foreground">{t("analytics.source")}</span>
@@ -45,7 +45,7 @@ const AnalyticsView: React.FC<Props> = (props: Props) => {
                     <div key={reference.name} className="w-full flex flex-row justify-between items-center">
                       <span className="whitespace-nowrap py-2 px-2 text-sm truncate text-foreground">
                         {reference.name ? (
-                          <a className="hover:underline hover:text-primary" href={reference.name} target="_blank">
+                          <a className="hover:underline hover:text-foreground" href={reference.name} target="_blank">
                             {reference.name}
                           </a>
                         ) : (
@@ -69,7 +69,7 @@ const AnalyticsView: React.FC<Props> = (props: Props) => {
                 <button
                   className={`whitespace-nowrap border-b-2 px-1 text-sm font-medium ${
                     selectedDeviceTab === "browser"
-                      ? "border-primary text-primary"
+                      ? "border-primary text-foreground"
                       : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
                   }`}
                   onClick={() => setSelectedDeviceTab("browser")}
@@ -80,7 +80,7 @@ const AnalyticsView: React.FC<Props> = (props: Props) => {
                 <button
                   className={`whitespace-nowrap border-b-2 px-1 text-sm font-medium ${
                     selectedDeviceTab === "os"
-                      ? "border-primary text-primary"
+                      ? "border-primary text-foreground"
                       : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
                   }`}
                   onClick={() => setSelectedDeviceTab("os")}
@@ -90,7 +90,7 @@ const AnalyticsView: React.FC<Props> = (props: Props) => {
               </div>
             </div>
 
-            <div className="w-full mt-1 overflow-hidden shadow ring-1 ring-border rounded-lg">
+            <div className="w-full mt-1 overflow-hidden ring-1 ring-border rounded-md">
               {selectedDeviceTab === "browser" ? (
                 <div className="w-full divide-y divide-border">
                   <div className="w-full flex flex-row justify-between items-center">

@@ -46,7 +46,6 @@
   "filter": {
     "all": "Tout",
     "mine": "Le mien",
-    "compact-mode": "Mode compact",
     "order-by": "Commandé par",
     "direction": "Direction"
   },

@@ -48,7 +48,7 @@ const SignIn: React.FC = () => {
           {!workspaceStore.setting.disallowUserRegistration && !workspaceStore.setting.disallowPasswordAuth && (
             <p className="w-full mt-4 text-sm">
               <span className="text-muted-foreground">{"Don't have an account yet?"}</span>
-              <Link className="cursor-pointer ml-2 text-primary hover:underline" to="/auth/signup" viewTransition>
+              <Link className="cursor-pointer ml-2 font-medium text-foreground hover:underline" to="/auth/signup" viewTransition>
                 {t("auth.sign-up")}
               </Link>
             </p>

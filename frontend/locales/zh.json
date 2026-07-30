@@ -46,7 +46,6 @@
   "filter": {
     "all": "所有",
     "personal": "我的",
-    "compact-mode": "紧凑模式",
     "order-by": "排序方式",
     "direction": "方向"
   },

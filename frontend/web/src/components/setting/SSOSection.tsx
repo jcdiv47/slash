@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { workspaceServiceClient } from "@/grpcweb";
 import { useWorkspaceStore } from "@/stores";
-import { FeatureType } from "@/stores/workspace";
 import { IdentityProvider } from "@/types/proto/api/v1/workspace_service";
 import { showCommonDialog } from "../Alert";
 import CreateIdentityProviderDrawer from "../CreateIdentityProviderDrawer";
-import FeatureBadge from "../FeatureBadge";
 import Icon from "../Icon";
 
 interface EditState {
@@ -22,7 +21,6 @@ const SSOSection = () => {
   const workspaceStore = useWorkspaceStore();
   const [identityProviderList, setIdentityProviderList] = useState<IdentityProvider[]>([]);
   const [editState, setEditState] = useState<EditState>({ open: false, identityProvider: undefined });
-  const isSSOFeatureEnabled = workspaceStore.checkFeatureAvailable(FeatureType.SSO);
 
   useEffect(() => {
     fetchIdentityProviderList();
@@ -37,7 +35,7 @@ const SSOSection = () => {
     showCommonDialog({
       title: "Delete identity provider",
       content: `Are you sure to delete identity provider \`${identityProvider.title}\`? You cannot undo this action.`,
-      style: "danger",
+      style: "destructive",
       onConfirm: async () => {
         try {
           await workspaceServiceClient.updateWorkspaceSetting({
@@ -61,9 +59,8 @@ const SSOSection = () => {
         <div className="w-full flex flex-row justify-between items-center gap-1">
           <div className="flex flex-row justify-start items-center">
             <span className="font-medium text-foreground">SSO</span>
-            <FeatureBadge className="w-5 h-auto ml-1 text-blue-600" feature={FeatureType.SSO} />
             <a
-              className="text-blue-600 text-sm hover:underline flex flex-row justify-center items-center ml-2"
+              className="text-foreground text-sm hover:underline flex flex-row justify-center items-center ml-2"
               href="https://github.com/yourselfhosted/slash/blob/main/docs/getting-started/sso.md"
               target="_blank"
             >
@@ -73,7 +70,6 @@ const SSOSection = () => {
           </div>
           <Button
             variant="outline"
-            disabled={!isSSOFeatureEnabled}
             onClick={() =>
               setEditState({
                 open: true,
@@ -87,7 +83,7 @@ const SSOSection = () => {
         {identityProviderList.length > 0 && (
           <div className="mt-2 flow-root">
             <div className="overflow-x-auto">
-              <div className="inline-block border rounded-lg border-border min-w-full align-middle">
+              <Card className="inline-block min-w-full align-middle">
                 <table className="min-w-full divide-y divide-border">
                   <thead>
                     <tr>
@@ -128,7 +124,7 @@ const SSOSection = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </Card>
             </div>
           </div>
         )}

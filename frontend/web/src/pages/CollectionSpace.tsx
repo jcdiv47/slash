@@ -1,4 +1,3 @@
-import classNames from "classnames";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -7,6 +6,7 @@ import ShortcutFrame from "@/components/ShortcutFrame";
 import ShortcutView from "@/components/ShortcutView";
 import { Separator } from "@/components/ui/separator";
 import useResponsiveWidth from "@/hooks/useResponsiveWidth";
+import { cn } from "@/lib/utils";
 import { useUserStore, useCollectionStore, useShortcutStore } from "@/stores";
 import { Collection } from "@/types/proto/api/v1/collection_service";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
@@ -66,7 +66,7 @@ const CollectionSpace = () => {
 
   return (
     <div className="w-full h-full sm:px-12 sm:py-10 sm:h-screen sm:bg-muted">
-      <div className="w-full h-full flex flex-row sm:border sm:border-border p-4 rounded-2xl bg-background">
+      <div className="w-full h-full flex flex-row sm:border sm:border-border p-4 rounded-md bg-background">
         <div className="w-full sm:w-56 sm:pr-4 flex flex-col justify-start items-start overflow-auto shrink-0">
           <div className="w-full sticky top-0 px-2">
             <div className="w-full flex flex-row justify-start items-center text-foreground">
@@ -80,7 +80,7 @@ const CollectionSpace = () => {
             {shortcuts.map((shortcut) => {
               return (
                 <ShortcutView
-                  className={classNames(
+                  className={cn(
                     "w-full py-2 cursor-pointer sm:!px-2",
                     selectedShortcut?.id === shortcut.id ? "bg-accent" : "sm:border-transparent",
                   )}
@@ -99,7 +99,7 @@ const CollectionSpace = () => {
               <ShortcutFrame key={selectedShortcut.id} shortcut={selectedShortcut} />
             ) : (
               <div className="w-full h-full flex flex-col justify-center items-center p-8">
-                <div className="w-72 max-w-full border border-border bg-card text-muted-foreground p-6 pb-4 rounded-2xl shadow-xl">
+                <div className="w-72 max-w-full border border-border bg-card text-muted-foreground p-6 pb-4 rounded-md">
                   <Icon.AppWindow className="w-12 h-auto mb-2 opacity-60" strokeWidth={1} />
                   <p className="text-lg font-medium text-foreground">Click on a tab in the Sidebar to get started.</p>
                   <Separator className="my-2" />

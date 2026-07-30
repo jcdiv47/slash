@@ -47,7 +47,6 @@
   "filter": {
     "all": "Összes",
     "mine": "Saját",
-    "compact-mode": "Kompakt mód",
     "order-by": "Rendezés",
     "direction": "Irány"
   },

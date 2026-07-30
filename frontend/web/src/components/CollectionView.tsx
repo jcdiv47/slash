@@ -1,9 +1,9 @@
-import classNames from "classnames";
 import copy from "copy-to-clipboard";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { absolutifyLink } from "@/helpers/utils";
 import useNavigateTo from "@/hooks/useNavigateTo";
@@ -45,7 +45,7 @@ const CollectionView = (props: Props) => {
     showCommonDialog({
       title: "Delete Collection",
       content: `Are you sure to delete collection \`${collection.name}\`? You cannot undo this action.`,
-      style: "danger",
+      style: "destructive",
       onConfirm: async () => {
         await collectionStore.deleteCollection(collection.id);
       },
@@ -62,15 +62,15 @@ const CollectionView = (props: Props) => {
 
   return (
     <>
-      <div className={classNames("w-full flex flex-col justify-start items-start border border-border rounded-lg hover:shadow")}>
-        <div className="bg-muted px-3 py-2 w-full flex flex-row justify-between items-center rounded-t-lg">
+      <Card className="w-full flex flex-col justify-start items-start">
+        <div className="bg-muted px-3 py-2 w-full flex flex-row justify-between items-center rounded-t-md">
           <div className="w-auto flex flex-col justify-start items-start mr-2">
             <div className="w-full truncate">
               <Link className="leading-6 font-medium text-foreground" to={`/c/${collection.name}`} viewTransition>
                 {collection.title}
               </Link>
-              <span className="ml-1 leading-6 text-muted-foreground" onClick={handleCopyCollectionLink}>
-                (c/{collection.name})
+              <span className="shortcut-name ml-1.5 text-sm text-muted-foreground cursor-pointer" onClick={handleCopyCollectionLink}>
+                c/{collection.name}
               </span>
             </div>
             <p className="text-sm text-muted-foreground">{collection.description}</p>
@@ -142,7 +142,7 @@ const CollectionView = (props: Props) => {
             );
           })}
         </div>
-      </div>
+      </Card>
 
       {showEditDialog && (
         <CreateCollectionDialog

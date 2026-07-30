@@ -16,7 +16,10 @@ export interface Order {
   direction: "asc" | "desc";
 }
 
-export type DisplayStyle = "full" | "compact";
+// `full` and `compact` are both grids, of large cards and small tiles
+// respectively; `list` is the only row-based style. Values are persisted, so
+// this union may be extended but existing members must not be renamed.
+export type DisplayStyle = "full" | "compact" | "list";
 
 interface ViewState {
   filter: Filter;

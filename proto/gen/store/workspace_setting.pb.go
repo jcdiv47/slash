@@ -33,9 +33,6 @@ const (
 	WorkspaceSettingKey_WORKSPACE_SETTING_SHORTCUT_RELATED WorkspaceSettingKey = 3
 	// Workspace identity provider settings.
 	WorkspaceSettingKey_WORKSPACE_SETTING_IDENTITY_PROVIDER WorkspaceSettingKey = 4
-	// TODO: remove the following keys.
-	// The license key.
-	WorkspaceSettingKey_WORKSPACE_SETTING_LICENSE_KEY WorkspaceSettingKey = 10
 	// The secret session key used to encrypt session data.
 	WorkspaceSettingKey_WORKSPACE_SETTING_SECRET_SESSION WorkspaceSettingKey = 11
 	// The default visibility of shortcuts and collections.
@@ -50,7 +47,6 @@ var (
 		2:  "WORKSPACE_SETTING_SECURITY",
 		3:  "WORKSPACE_SETTING_SHORTCUT_RELATED",
 		4:  "WORKSPACE_SETTING_IDENTITY_PROVIDER",
-		10: "WORKSPACE_SETTING_LICENSE_KEY",
 		11: "WORKSPACE_SETTING_SECRET_SESSION",
 		13: "WORKSPACE_SETTING_DEFAULT_VISIBILITY",
 	}
@@ -60,7 +56,6 @@ var (
 		"WORKSPACE_SETTING_SECURITY":           2,
 		"WORKSPACE_SETTING_SHORTCUT_RELATED":   3,
 		"WORKSPACE_SETTING_IDENTITY_PROVIDER":  4,
-		"WORKSPACE_SETTING_LICENSE_KEY":        10,
 		"WORKSPACE_SETTING_SECRET_SESSION":     11,
 		"WORKSPACE_SETTING_DEFAULT_VISIBILITY": 13,
 	}
@@ -226,7 +221,6 @@ func (*WorkspaceSetting_IdentityProvider) isWorkspaceSetting_Value() {}
 type WorkspaceSetting_GeneralSetting struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SecretSession string                 `protobuf:"bytes,1,opt,name=secret_session,json=secretSession,proto3" json:"secret_session,omitempty"`
-	LicenseKey    string                 `protobuf:"bytes,2,opt,name=license_key,json=licenseKey,proto3" json:"license_key,omitempty"`
 	InstanceUrl   string                 `protobuf:"bytes,3,opt,name=instance_url,json=instanceUrl,proto3" json:"instance_url,omitempty"`
 	Branding      []byte                 `protobuf:"bytes,4,opt,name=branding,proto3" json:"branding,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -266,13 +260,6 @@ func (*WorkspaceSetting_GeneralSetting) Descriptor() ([]byte, []int) {
 func (x *WorkspaceSetting_GeneralSetting) GetSecretSession() string {
 	if x != nil {
 		return x.SecretSession
-	}
-	return ""
-}
-
-func (x *WorkspaceSetting_GeneralSetting) GetLicenseKey() string {
-	if x != nil {
-		return x.LicenseKey
 	}
 	return ""
 }
@@ -435,20 +422,18 @@ var File_store_workspace_setting_proto protoreflect.FileDescriptor
 
 const file_store_workspace_setting_proto_rawDesc = "" +
 	"\n" +
-	"\x1dstore/workspace_setting.proto\x12\vslash.store\x1a\x12store/common.proto\x1a\x0fstore/idp.proto\"\xae\a\n" +
+	"\x1dstore/workspace_setting.proto\x12\vslash.store\x1a\x12store/common.proto\x1a\x0fstore/idp.proto\"\x92\a\n" +
 	"\x10WorkspaceSetting\x122\n" +
 	"\x03key\x18\x01 \x01(\x0e2 .slash.store.WorkspaceSettingKeyR\x03key\x12\x10\n" +
 	"\x03raw\x18\x02 \x01(\tR\x03raw\x12H\n" +
 	"\ageneral\x18\x03 \x01(\v2,.slash.store.WorkspaceSetting.GeneralSettingH\x00R\ageneral\x12K\n" +
 	"\bsecurity\x18\x04 \x01(\v2-.slash.store.WorkspaceSetting.SecuritySettingH\x00R\bsecurity\x12a\n" +
 	"\x10shortcut_related\x18\x05 \x01(\v24.slash.store.WorkspaceSetting.ShortcutRelatedSettingH\x00R\x0fshortcutRelated\x12d\n" +
-	"\x11identity_provider\x18\x06 \x01(\v25.slash.store.WorkspaceSetting.IdentityProviderSettingH\x00R\x10identityProvider\x1a\x97\x01\n" +
+	"\x11identity_provider\x18\x06 \x01(\v25.slash.store.WorkspaceSetting.IdentityProviderSettingH\x00R\x10identityProvider\x1a|\n" +
 	"\x0eGeneralSetting\x12%\n" +
-	"\x0esecret_session\x18\x01 \x01(\tR\rsecretSession\x12\x1f\n" +
-	"\vlicense_key\x18\x02 \x01(\tR\n" +
-	"licenseKey\x12!\n" +
+	"\x0esecret_session\x18\x01 \x01(\tR\rsecretSession\x12!\n" +
 	"\finstance_url\x18\x03 \x01(\tR\vinstanceUrl\x12\x1a\n" +
-	"\bbranding\x18\x04 \x01(\fR\bbranding\x1a\x85\x01\n" +
+	"\bbranding\x18\x04 \x01(\fR\bbrandingJ\x04\b\x02\x10\x03\x1a\x85\x01\n" +
 	"\x0fSecuritySetting\x12<\n" +
 	"\x1adisallow_user_registration\x18\x01 \x01(\bR\x18disallowUserRegistration\x124\n" +
 	"\x16disallow_password_auth\x18\x02 \x01(\bR\x14disallowPasswordAuth\x1a`\n" +
@@ -456,17 +441,17 @@ const file_store_workspace_setting_proto_rawDesc = "" +
 	"\x12default_visibility\x18\x01 \x01(\x0e2\x17.slash.store.VisibilityR\x11defaultVisibility\x1ag\n" +
 	"\x17IdentityProviderSetting\x12L\n" +
 	"\x12identity_providers\x18\x01 \x03(\v2\x1d.slash.store.IdentityProviderR\x11identityProvidersB\a\n" +
-	"\x05value*\xbf\x02\n" +
+	"\x05value*\xa2\x02\n" +
 	"\x13WorkspaceSettingKey\x12%\n" +
 	"!WORKSPACE_SETTING_KEY_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19WORKSPACE_SETTING_GENERAL\x10\x01\x12\x1e\n" +
 	"\x1aWORKSPACE_SETTING_SECURITY\x10\x02\x12&\n" +
 	"\"WORKSPACE_SETTING_SHORTCUT_RELATED\x10\x03\x12'\n" +
-	"#WORKSPACE_SETTING_IDENTITY_PROVIDER\x10\x04\x12!\n" +
-	"\x1dWORKSPACE_SETTING_LICENSE_KEY\x10\n" +
-	"\x12$\n" +
+	"#WORKSPACE_SETTING_IDENTITY_PROVIDER\x10\x04\x12$\n" +
 	" WORKSPACE_SETTING_SECRET_SESSION\x10\v\x12(\n" +
-	"$WORKSPACE_SETTING_DEFAULT_VISIBILITY\x10\rB\xa6\x01\n" +
+	"$WORKSPACE_SETTING_DEFAULT_VISIBILITY\x10\r\"\x04\b\n" +
+	"\x10\n" +
+	"B\xa6\x01\n" +
 	"\x0fcom.slash.storeB\x15WorkspaceSettingProtoP\x01Z/github.com/yourselfhosted/slash/proto/gen/store\xa2\x02\x03SSX\xaa\x02\vSlash.Store\xca\x02\vSlash\\Store\xe2\x02\x17Slash\\Store\\GPBMetadata\xea\x02\fSlash::Storeb\x06proto3"
 
 var (

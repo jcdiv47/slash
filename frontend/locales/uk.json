@@ -49,7 +49,6 @@
   "filter": {
     "all": "Все",
     "personal": "Особисті",
-    "compact-mode": "Компактний режим",
     "order-by": "Сортувати за",
     "direction": "Напрямок"
   },

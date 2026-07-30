@@ -3,7 +3,7 @@ const { fontFamily } = require("tailwindcss/defaultTheme");
 
 module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,tsx}"],
-  darkMode: ["class", "class"],
+  darkMode: "class",
   theme: {
   	container: {
   		center: true,
@@ -58,13 +58,17 @@ module.exports = {
   				foreground: 'hsl(var(--card-foreground))'
   			}
   		},
+  		// Rebased around a 4px --radius. The stock shadcn scale subtracts from
+  		// --radius, which collapses `sm` to 0px at this tightness, so the steps
+  		// are additive from the base instead.
   		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
+  			lg: 'calc(var(--radius) + 2px)',
+  			md: 'var(--radius)',
+  			sm: 'calc(var(--radius) - 1px)'
   		},
   		fontFamily: {
-  			sans: fontFamily.sans
+  			sans: ['Inter Variable', ...fontFamily.sans],
+  			mono: ['JetBrains Mono Variable', ...fontFamily.mono]
   		},
   		keyframes: {
   			'accordion-down': {

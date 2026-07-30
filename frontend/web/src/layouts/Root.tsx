@@ -2,6 +2,7 @@ import { useTheme } from "next-themes";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet } from "react-router-dom";
+import CommandPalette from "@/components/CommandPalette";
 import Header from "@/components/Header";
 import Navigator from "@/components/Navigator";
 import useNavigateTo from "@/hooks/useNavigateTo";
@@ -50,6 +51,7 @@ const Root: React.FC = () => {
         <Header />
         <Navigator />
         <Outlet />
+        <CommandPalette />
       </div>
     )
   );

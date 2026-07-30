@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type AlertStyle = "default" | "destructive" | "danger";
+type AlertStyle = "default" | "destructive";
 
 interface Props {
   title: string;
@@ -59,9 +59,7 @@ const Alert: React.FC<Props> = (props: Props) => {
           <AlertDialogCancel onClick={handleCloseBtnClick}>{closeBtnText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirmBtnClick}
-            className={
-              style === "destructive" || style === "danger" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""
-            }
+            className={style === "destructive" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
           >
             {confirmBtnText}
           </AlertDialogAction>

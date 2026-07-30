@@ -117,7 +117,7 @@ const SignUp: React.FC = () => {
           ) : (
             <p className="w-full mt-4 text-sm">
               <span className="text-muted-foreground">{"Already has an account?"}</span>
-              <Link className="cursor-pointer ml-2 text-primary hover:underline" to="/auth" viewTransition>
+              <Link className="cursor-pointer ml-2 font-medium text-foreground hover:underline" to="/auth" viewTransition>
                 {t("auth.sign-in")}
               </Link>
             </p>

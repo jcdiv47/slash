@@ -8,7 +8,6 @@
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import { FieldMask } from "../../google/protobuf/field_mask";
 import { Visibility, visibilityFromJSON, visibilityToNumber } from "./common";
-import { Subscription } from "./subscription_service";
 
 export const protobufPackage = "slash.api.v1";
 
@@ -22,10 +21,6 @@ export interface WorkspaceProfile {
    * Format: "users/{id}"
    */
   owner: string;
-  /** The workspace subscription. */
-  subscription?:
-    | Subscription
-    | undefined;
   /** The workspace branding. */
   branding: Uint8Array;
 }
@@ -121,7 +116,7 @@ export interface UpdateWorkspaceSettingRequest {
 }
 
 function createBaseWorkspaceProfile(): WorkspaceProfile {
-  return { mode: "", version: "", owner: "", subscription: undefined, branding: new Uint8Array(0) };
+  return { mode: "", version: "", owner: "", branding: new Uint8Array(0) };
 }
 
 export const WorkspaceProfile: MessageFns<WorkspaceProfile> = {
@@ -134,9 +129,6 @@ export const WorkspaceProfile: MessageFns<WorkspaceProfile> = {
     }
     if (message.owner !== "") {
       writer.uint32(26).string(message.owner);
-    }
-    if (message.subscription !== undefined) {
-      Subscription.encode(message.subscription, writer.uint32(34).fork()).join();
     }
     if (message.branding.length !== 0) {
       writer.uint32(50).bytes(message.branding);
@@ -175,14 +167,6 @@ export const WorkspaceProfile: MessageFns<WorkspaceProfile> = {
           message.owner = reader.string();
           continue;
         }
-        case 4: {
-          if (tag !== 34) {
-            break;
-          }
-
-          message.subscription = Subscription.decode(reader, reader.uint32());
-          continue;
-        }
         case 6: {
           if (tag !== 50) {
             break;
@@ -208,9 +192,6 @@ export const WorkspaceProfile: MessageFns<WorkspaceProfile> = {
     message.mode = object.mode ?? "";
     message.version = object.version ?? "";
     message.owner = object.owner ?? "";
-    message.subscription = (object.subscription !== undefined && object.subscription !== null)
-      ? Subscription.fromPartial(object.subscription)
-      : undefined;
     message.branding = object.branding ?? new Uint8Array(0);
     return message;
   },

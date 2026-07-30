@@ -499,33 +499,6 @@ UpdateUserSetting updates the user setting.
 | default | An unexpected error response. | [rpcStatus](#rpcstatus) |
 
 ---
-## SubscriptionService
-
-### /v1/subscription
-
-#### GET
-##### Responses
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 200 | A successful response. | [v1GetSubscriptionResponse](#v1getsubscriptionresponse) |
-| default | An unexpected error response. | [rpcStatus](#rpcstatus) |
-
-#### PATCH
-##### Parameters
-
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ------ |
-| body | body |  | Yes | [v1UpdateSubscriptionRequest](#v1updatesubscriptionrequest) |
-
-##### Responses
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 200 | A successful response. | [v1UpdateSubscriptionResponse](#v1updatesubscriptionresponse) |
-| default | An unexpected error response. | [rpcStatus](#rpcstatus) |
-
----
 ### Models
 
 #### GetShortcutAnalyticsResponseAnalyticsItem
@@ -626,7 +599,6 @@ UpdateUserSetting updates the user setting.
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| licenseKey | string |  | No |
 | enableSignup | boolean | Whether to enable other users to sign up. | No |
 | instanceUrl | string | The instance URL. | No |
 | customStyle | string | The custom style. | No |
@@ -734,12 +706,6 @@ UpdateUserSetting updates the user setting.
 | ---- | ---- | ----------- | -------- |
 | shortcut | [apiv1Shortcut](#apiv1shortcut) |  | No |
 
-#### v1GetSubscriptionResponse
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| subscription | [v1Subscription](#v1subscription) |  | No |
-
 #### v1GetUserResponse
 
 | Name | Type | Description | Required |
@@ -788,12 +754,6 @@ UpdateUserSetting updates the user setting.
 | ---- | ---- | ----------- | -------- |
 | users | [ [v1User](#v1user) ] |  | No |
 
-#### v1PlanType
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| v1PlanType | string |  |  |
-
 #### v1Role
 
 | Name | Type | Description | Required |
@@ -818,14 +778,6 @@ UpdateUserSetting updates the user setting.
 | ---- | ---- | ----------- | -------- |
 | user | [v1User](#v1user) |  | No |
 
-#### v1Subscription
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| plan | [v1PlanType](#v1plantype) |  | No |
-| startedTime | dateTime |  | No |
-| expiresTime | dateTime |  | No |
-
 #### v1UpdateCollectionResponse
 
 | Name | Type | Description | Required |
@@ -837,18 +789,6 @@ UpdateUserSetting updates the user setting.
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | shortcut | [apiv1Shortcut](#apiv1shortcut) |  | No |
-
-#### v1UpdateSubscriptionRequest
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| licenseKey | string |  | Yes |
-
-#### v1UpdateSubscriptionResponse
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| subscription | [v1Subscription](#v1subscription) |  | No |
 
 #### v1UpdateUserResponse
 
@@ -896,7 +836,6 @@ UpdateUserSetting updates the user setting.
 | ---- | ---- | ----------- | -------- |
 | mode | string | Current workspace mode: dev, prod. | No |
 | version | string | Current workspace version. | No |
-| plan | [v1PlanType](#v1plantype) | The workspace plan. | No |
 | enableSignup | boolean | Whether to enable other users to sign up. | No |
 | customStyle | string | The custom style. | No |
 | customScript | string | The custom script. | No |
