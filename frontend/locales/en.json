@@ -54,7 +54,13 @@
     "display-compact": "Compact",
     "display-list": "List",
     "order-by": "Order by",
-    "direction": "Direction"
+    "order-by-name": "Name",
+    "order-by-created": "Created",
+    "order-by-updated": "Updated",
+    "order-by-visits": "Visits",
+    "direction": "Direction",
+    "direction-asc": "Ascending",
+    "direction-desc": "Descending"
   },
   "user": {
     "self": "User",
