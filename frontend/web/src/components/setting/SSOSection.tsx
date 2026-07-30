@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { workspaceServiceClient } from "@/grpcweb";
 import { useWorkspaceStore } from "@/stores";
 import { IdentityProvider } from "@/types/proto/api/v1/workspace_service";
@@ -82,7 +83,7 @@ const SSOSection = () => {
         {identityProviderList.length > 0 && (
           <div className="mt-2 flow-root">
             <div className="overflow-x-auto">
-              <div className="inline-block border rounded-lg border-border min-w-full align-middle">
+              <Card className="inline-block min-w-full align-middle">
                 <table className="min-w-full divide-y divide-border">
                   <thead>
                     <tr>
@@ -123,7 +124,7 @@ const SSOSection = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </Card>
             </div>
           </div>
         )}

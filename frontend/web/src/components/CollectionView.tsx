@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { absolutifyLink } from "@/helpers/utils";
 import useNavigateTo from "@/hooks/useNavigateTo";
@@ -61,7 +62,7 @@ const CollectionView = (props: Props) => {
 
   return (
     <>
-      <div className="w-full flex flex-col justify-start items-start border border-border rounded-md bg-card">
+      <Card className="w-full flex flex-col justify-start items-start">
         <div className="bg-muted px-3 py-2 w-full flex flex-row justify-between items-center rounded-t-md">
           <div className="w-auto flex flex-col justify-start items-start mr-2">
             <div className="w-full truncate">
@@ -141,7 +142,7 @@ const CollectionView = (props: Props) => {
             );
           })}
         </div>
-      </div>
+      </Card>
 
       {showEditDialog && (
         <CreateCollectionDialog

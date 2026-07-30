@@ -5,6 +5,7 @@ import { showCommonDialog } from "@/components/Alert";
 import CreateUserDialog from "@/components/CreateUserDialog";
 import Icon from "@/components/Icon";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useUserStore } from "@/stores";
 import { User } from "@/types/proto/api/v1/user_service";
 
@@ -58,7 +59,7 @@ const WorkspaceMembersSection = () => {
           </div>
           <div className="w-full flow-root">
             <div className="overflow-x-auto">
-              <div className="inline-block border rounded-lg border-border min-w-full align-middle">
+              <Card className="inline-block min-w-full align-middle">
                 <table className="min-w-full divide-y divide-border">
                   <thead>
                     <tr>
@@ -101,7 +102,7 @@ const WorkspaceMembersSection = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

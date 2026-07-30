@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 import Icon from "./Icon";
@@ -17,11 +18,8 @@ const ShortcutView = (props: Props) => {
   const { shortcut, className, showActions, alwaysShowLink, onClick } = props;
 
   return (
-    <div
-      className={cn(
-        "group w-full px-3 py-2 flex flex-row justify-start items-center border border-border rounded-md bg-card hover:bg-accent transition-colors",
-        className,
-      )}
+    <Card
+      className={cn("group w-full px-3 py-2 flex flex-row justify-start items-center hover:bg-accent transition-colors", className)}
       onClick={onClick}
     >
       <div className="w-5 h-5 flex justify-center items-center overflow-clip shrink-0">
@@ -53,7 +51,7 @@ const ShortcutView = (props: Props) => {
           <ShortcutActionsDropdown shortcut={shortcut} />
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 
