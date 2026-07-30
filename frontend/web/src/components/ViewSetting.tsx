@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
 import { useViewStore } from "@/stores";
+import { DisplayStyle } from "@/stores/view";
 import Icon from "./Icon";
 import Dropdown from "./common/Dropdown";
 
@@ -24,11 +24,17 @@ const ViewSetting = () => {
       actions={
         <div className="w-52 p-2 gap-2 flex flex-col justify-start items-start" onClick={(e) => e.stopPropagation()}>
           <div className="w-full flex flex-row justify-between items-center">
-            <span className="text-sm shrink-0 mr-2">{t("filter.compact-mode")}</span>
-            <Switch
-              checked={displayStyle === "compact"}
-              onCheckedChange={(checked) => viewStore.setDisplayStyle(checked ? "compact" : "full")}
-            />
+            <span className="text-sm shrink-0 mr-2">{t("filter.display")}</span>
+            <Select value={displayStyle} onValueChange={(value) => viewStore.setDisplayStyle(value as DisplayStyle)}>
+              <SelectTrigger className="w-32 h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="full">{t("filter.display-full")}</SelectItem>
+                <SelectItem value="compact">{t("filter.display-compact")}</SelectItem>
+                <SelectItem value="list">{t("filter.display-list")}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Separator className="!my-1" />
           <div className="w-full flex flex-row justify-between items-center">

@@ -46,7 +46,6 @@
   "filter": {
     "all": "Hepsi",
     "mine": "Benim",
-    "compact-mode": "Kompakt mod",
     "order-by": "Sırala",
     "direction": "Yön"
   },

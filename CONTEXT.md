@@ -56,10 +56,16 @@ _Avoid_: User, account, teammate
 ### Presentation
 
 **Display Style**:
-Which shape the Shortcut grid takes. `full` shows a card per Shortcut; `compact`
-shows a smaller tile per Shortcut. Both are grids — neither is a row-based list,
-so "list" remains an unused term.
+Which shape the Shortcut collection takes on a dashboard. `full` is a grid of
+cards, `compact` a grid of smaller tiles, and `list` the one row-based style,
+with columns aligned down the page.
 _Avoid_: Layout, view mode, density
+
+**Row**:
+A single Shortcut rendered as one line of the `list` Display Style. Rows share a
+column template, so a Row is only meaningful as part of a list — unlike a card or
+tile, which stands alone.
+_Avoid_: Line, item, record, entry
 
 **Destructive**:
 An action a Member cannot undo, such as deleting a Shortcut. The canonical term

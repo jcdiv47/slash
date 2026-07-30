@@ -47,7 +47,6 @@
   "filter": {
     "all": "Все",
     "mine": "Мои",
-    "compact-mode": "Компактный режим",
     "order-by": "Создана",
     "direction": "Путь"
   },

@@ -45,7 +45,7 @@ const AnalyticsView: React.FC<Props> = (props: Props) => {
                     <div key={reference.name} className="w-full flex flex-row justify-between items-center">
                       <span className="whitespace-nowrap py-2 px-2 text-sm truncate text-foreground">
                         {reference.name ? (
-                          <a className="hover:underline hover:text-primary" href={reference.name} target="_blank">
+                          <a className="hover:underline hover:text-foreground" href={reference.name} target="_blank">
                             {reference.name}
                           </a>
                         ) : (
@@ -69,7 +69,7 @@ const AnalyticsView: React.FC<Props> = (props: Props) => {
                 <button
                   className={`whitespace-nowrap border-b-2 px-1 text-sm font-medium ${
                     selectedDeviceTab === "browser"
-                      ? "border-primary text-primary"
+                      ? "border-primary text-foreground"
                       : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
                   }`}
                   onClick={() => setSelectedDeviceTab("browser")}
@@ -80,7 +80,7 @@ const AnalyticsView: React.FC<Props> = (props: Props) => {
                 <button
                   className={`whitespace-nowrap border-b-2 px-1 text-sm font-medium ${
                     selectedDeviceTab === "os"
-                      ? "border-primary text-primary"
+                      ? "border-primary text-foreground"
                       : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
                   }`}
                   onClick={() => setSelectedDeviceTab("os")}

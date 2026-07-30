@@ -49,7 +49,6 @@
   "filter": {
     "all": "全て",
     "personal": "個人",
-    "compact-mode": "コンパクトモード",
     "order-by": "順序",
     "direction": "方向"
   },

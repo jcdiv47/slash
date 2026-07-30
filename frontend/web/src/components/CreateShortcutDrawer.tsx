@@ -311,7 +311,7 @@ const CreateShortcutDrawer: React.FC<Props> = (props: Props) => {
               >
                 <span className="text-sm flex items-center gap-1">
                   Social media metadata
-                  <Icon.Sparkles className="w-4 h-auto text-primary" />
+                  <Icon.Sparkles className="w-4 h-auto text-muted-foreground" />
                 </span>
                 <Icon.ChevronDown
                   className={cn("w-4 h-auto text-muted-foreground transition-transform", showOpenGraphMetadata && "rotate-180")}

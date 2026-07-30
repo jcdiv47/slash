@@ -6,6 +6,7 @@ import FilterView from "@/components/FilterView";
 import Icon from "@/components/Icon";
 import ShortcutsContainer from "@/components/ShortcutsContainer";
 import ShortcutsNavigator from "@/components/ShortcutsNavigator";
+import ViewSetting from "@/components/ViewSetting";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useLoading from "@/hooks/useLoading";
@@ -59,7 +60,8 @@ const ShortcutDashboard: React.FC = () => {
               onChange={(e) => viewStore.setFilter({ search: e.target.value })}
             />
           </div>
-          <div className="flex flex-row justify-end items-center">
+          <div className="flex flex-row justify-end items-center gap-3">
+            <ViewSetting />
             <Button variant="default" size="sm" onClick={() => setShowCreateShortcutDrawer(true)}>
               <Icon.Plus className="w-5 h-auto" />
               <span className="ml-0.5">{t("common.create")}</span>
