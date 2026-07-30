@@ -1,51 +1,66 @@
+/* Self-hosted variable fonts. Never load these from a CDN: the frontend is
+   go:embed'd into a single binary that often runs on private networks, so an
+   external font request would leak user IPs and break air-gapped installs.
+   See docs/adr/0001-vendored-fonts-over-cdn.md. */
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/jetbrains-mono/wght.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Palette: true grey (zinc) neutrals with a single amber accent.
+   Surfaces are separated by luminance, not by shadow -- `card` is always one
+   step away from `background` so panels read as objects in both themes.
+
+   The accent may fill, never letter: amber-500 on white is ~2:1 contrast, so
+   it is unusable as foreground text, but ~10.6:1 as a fill behind near-black
+   text. `primary` is therefore only ever a background colour.
+   See docs/adr/0002-accent-may-fill-never-letter.md. */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --background: 240 5% 98%; /* zinc-50 */
+    --foreground: 240 10% 4%; /* zinc-950 */
+    --card: 0 0% 100%; /* white, raised above the page */
+    --card-foreground: 240 10% 4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --popover-foreground: 240 10% 4%;
+    --primary: 38 92% 50%; /* amber-500 -- fill only */
+    --primary-foreground: 240 10% 4%; /* near-black on amber, ~10.6:1 */
+    --secondary: 240 5% 96%; /* zinc-100 */
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%; /* zinc-500 */
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 10%;
+    --destructive: 0 72% 51%; /* red-600 */
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 90%; /* zinc-200 */
+    --input: 240 6% 90%;
+    --ring: 38 92% 50%; /* amber ring is non-text, so contrast-safe */
+    --radius: 0.25rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --background: 240 10% 4%; /* zinc-950 */
+    --foreground: 0 0% 98%; /* zinc-50 */
+    --card: 240 6% 10%; /* zinc-900, raised above the page */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 6% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 43 96% 56%; /* amber-400 -- brighter, glows on near-black */
+    --primary-foreground: 240 10% 4%;
+    --secondary: 240 4% 16%; /* zinc-800 */
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%; /* zinc-400 */
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 4% 16%; /* zinc-800 */
+    --input: 240 4% 16%;
+    --ring: 43 96% 56%;
   }
 }
 
@@ -79,10 +94,10 @@ html,
 
 @layer base {
   h1 {
-    @apply text-4xl font-bold tracking-tight;
+    @apply text-4xl font-bold tracking-tighter;
   }
   h2 {
-    @apply text-3xl font-semibold tracking-tight;
+    @apply text-3xl font-semibold tracking-tighter;
   }
   h3 {
     @apply text-2xl font-semibold tracking-tight;
@@ -92,5 +107,15 @@ html,
   }
   p {
     @apply leading-7;
+  }
+}
+
+@layer utilities {
+  /* A shortcut name is a command, so it is always set in mono with tabular
+     figures. Use this rather than reaching for `font-mono` directly, so the
+     treatment stays consistent everywhere a `s/name` is rendered. */
+  .shortcut-name {
+    @apply font-mono tracking-tight;
+    font-variant-numeric: tabular-nums;
   }
 }

@@ -1,5 +1,5 @@
-import classNames from "classnames";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 import { useShortcutStore, useViewStore } from "@/stores";
 import Icon from "./Icon";
 
@@ -14,9 +14,9 @@ const ShortcutsNavigator = () => {
   return (
     <div className="w-full flex flex-row justify-start items-center mb-4 gap-1 sm:flex-wrap overflow-x-auto no-scrollbar">
       <button
-        className={classNames(
+        className={cn(
           "flex flex-row justify-center items-center px-2 leading-7 text-sm rounded-md",
-          currentTab === "tab:all" ? "bg-primary text-primary-foreground shadow" : "text-foreground hover:bg-accent",
+          currentTab === "tab:all" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent",
         )}
         onClick={() => viewStore.setFilter({ tab: "tab:all" })}
       >
@@ -24,9 +24,9 @@ const ShortcutsNavigator = () => {
         <span className="font-normal">{t("filter.all")}</span>
       </button>
       <button
-        className={classNames(
+        className={cn(
           "flex flex-row justify-center items-center px-2 leading-7 text-sm rounded-md",
-          currentTab === "tab:mine" ? "bg-primary text-primary-foreground shadow" : "text-foreground hover:bg-accent",
+          currentTab === "tab:mine" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent",
         )}
         onClick={() => viewStore.setFilter({ tab: "tab:mine" })}
       >
@@ -36,9 +36,9 @@ const ShortcutsNavigator = () => {
       {Array.from(sortedTagMap.keys()).map((tag) => (
         <button
           key={tag}
-          className={classNames(
+          className={cn(
             "flex flex-row justify-center items-center px-2 leading-7 text-sm rounded-md",
-            currentTab === `tag:${tag}` ? "bg-primary text-primary-foreground shadow" : "text-foreground hover:bg-accent",
+            currentTab === `tag:${tag}` ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent",
           )}
           onClick={() => viewStore.setFilter({ tab: `tag:${tag}`, tag: undefined })}
         >

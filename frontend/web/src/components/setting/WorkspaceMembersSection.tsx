@@ -28,7 +28,7 @@ const WorkspaceMembersSection = () => {
     showCommonDialog({
       title: "Delete User",
       content: `Are you sure to delete user \`${user.nickname}\`? You cannot undo this action.`,
-      style: "danger",
+      style: "destructive",
       onConfirm: async () => {
         try {
           await userStore.deleteUser(user.id);

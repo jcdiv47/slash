@@ -1,5 +1,5 @@
-import classNames from "classnames";
 import useNavigateTo from "@/hooks/useNavigateTo";
+import { cn } from "@/lib/utils";
 import { useViewStore } from "@/stores";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 import ShortcutCard from "./ShortcutCard";
@@ -22,7 +22,7 @@ const ShortcutsContainer: React.FC<Props> = (props: Props) => {
 
   return (
     <div
-      className={classNames(
+      className={cn(
         "w-full grid grid-cols-1 gap-3 sm:gap-4",
         displayStyle === "full" ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-2 sm:grid-cols-4",
       )}

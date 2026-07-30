@@ -1,4 +1,3 @@
-import classnames from "classnames";
 import { isUndefined, uniq } from "lodash-es";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetBody, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import useLoading from "@/hooks/useLoading";
+import { cn } from "@/lib/utils";
 import { useShortcutStore, useWorkspaceStore } from "@/stores";
 import { getShortcutUpdateMask } from "@/stores/shortcut";
 import { Visibility } from "@/types/proto/api/v1/common";
@@ -303,7 +303,7 @@ const CreateShortcutDrawer: React.FC<Props> = (props: Props) => {
             <Separator className="my-4" />
             <div className="border rounded-lg overflow-hidden">
               <div
-                className={classnames(
+                className={cn(
                   "flex flex-row justify-between items-center px-3 py-2 cursor-pointer hover:bg-accent transition-colors",
                   showOpenGraphMetadata && "bg-accent border-b",
                 )}
@@ -314,7 +314,7 @@ const CreateShortcutDrawer: React.FC<Props> = (props: Props) => {
                   <Icon.Sparkles className="w-4 h-auto text-primary" />
                 </span>
                 <Icon.ChevronDown
-                  className={classnames("w-4 h-auto text-muted-foreground transition-transform", showOpenGraphMetadata && "rotate-180")}
+                  className={cn("w-4 h-auto text-muted-foreground transition-transform", showOpenGraphMetadata && "rotate-180")}
                 />
               </div>
               {showOpenGraphMetadata && (

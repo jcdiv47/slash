@@ -28,7 +28,7 @@ const ShortcutActionsDropdown = (props: Props) => {
     showCommonDialog({
       title: "Delete Shortcut",
       content: `Are you sure to delete shortcut \`${shortcut.name}\`? You cannot undo this action.`,
-      style: "danger",
+      style: "destructive",
       onConfirm: async () => {
         await shortcutStore.deleteShortcut(shortcut.id);
       },

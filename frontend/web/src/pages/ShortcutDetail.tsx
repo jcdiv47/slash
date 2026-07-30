@@ -1,4 +1,3 @@
-import classNames from "classnames";
 import copy from "copy-to-clipboard";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { absolutifyLink } from "@/helpers/utils";
 import useLoading from "@/hooks/useLoading";
 import useNavigateTo from "@/hooks/useNavigateTo";
+import { cn } from "@/lib/utils";
 import { useUserStore, useShortcutStore } from "@/stores";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 import { Role } from "@/types/proto/api/v1/user_service";
@@ -63,7 +63,7 @@ const ShortcutDetail = () => {
     showCommonDialog({
       title: "Delete Shortcut",
       content: `Are you sure to delete shortcut \`${shortcut.name}\`? You cannot undo this action.`,
-      style: "danger",
+      style: "destructive",
       onConfirm: async () => {
         await shortcutStore.deleteShortcut(shortcut.id);
         navigateTo("/", {
@@ -80,9 +80,7 @@ const ShortcutDetail = () => {
           <LinkFavicon url={shortcut.link} />
         </div>
         <a
-          className={classNames(
-            "group max-w-full flex flex-row px-1 mr-1 justify-start items-center cursor-pointer rounded-md hover:underline",
-          )}
+          className={cn("group max-w-full flex flex-row px-1 mr-1 justify-start items-center cursor-pointer rounded-md hover:underline")}
           href={shortcutLink}
           target="_blank"
         >
@@ -107,7 +105,7 @@ const ShortcutDetail = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                className="w-8 h-8 cursor-pointer border border-border rounded-full text-muted-foreground hover:bg-accent hover:shadow"
+                className="w-8 h-8 cursor-pointer border border-border rounded-full text-muted-foreground hover:bg-accent"
                 onClick={() => handleCopyButtonClick()}
               >
                 <Icon.Clipboard className="w-4 h-auto mx-auto" />
@@ -118,7 +116,7 @@ const ShortcutDetail = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                className="w-8 h-8 cursor-pointer border border-border rounded-full text-muted-foreground hover:bg-accent hover:shadow"
+                className="w-8 h-8 cursor-pointer border border-border rounded-full text-muted-foreground hover:bg-accent"
                 onClick={() => setShowQRCodeDialog(true)}
               >
                 <Icon.QrCode className="w-4 h-auto mx-auto" />
@@ -128,7 +126,7 @@ const ShortcutDetail = () => {
           </Tooltip>
           {havePermission && (
             <Dropdown
-              className="w-8 h-8 flex justify-center items-center border border-border cursor-pointer rounded-full hover:bg-accent hover:shadow"
+              className="w-8 h-8 flex justify-center items-center border border-border cursor-pointer rounded-full hover:bg-accent"
               actionsClassName="!w-32 !-right-24"
               actions={
                 <>

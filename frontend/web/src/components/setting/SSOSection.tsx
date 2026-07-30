@@ -34,7 +34,7 @@ const SSOSection = () => {
     showCommonDialog({
       title: "Delete identity provider",
       content: `Are you sure to delete identity provider \`${identityProvider.title}\`? You cannot undo this action.`,
-      style: "danger",
+      style: "destructive",
       onConfirm: async () => {
         try {
           await workspaceServiceClient.updateWorkspaceSetting({
@@ -59,7 +59,7 @@ const SSOSection = () => {
           <div className="flex flex-row justify-start items-center">
             <span className="font-medium text-foreground">SSO</span>
             <a
-              className="text-blue-600 text-sm hover:underline flex flex-row justify-center items-center ml-2"
+              className="text-foreground text-sm hover:underline flex flex-row justify-center items-center ml-2"
               href="https://github.com/yourselfhosted/slash/blob/main/docs/getting-started/sso.md"
               target="_blank"
             >

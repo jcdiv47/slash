@@ -1,4 +1,3 @@
-import classNames from "classnames";
 import copy from "copy-to-clipboard";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { absolutifyLink } from "@/helpers/utils";
+import { cn } from "@/lib/utils";
 import { useUserStore, useViewStore } from "@/stores";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 import Icon from "./Icon";
@@ -18,10 +18,17 @@ import VisibilityIcon from "./VisibilityIcon";
 
 interface Props {
   shortcut: Shortcut;
+  className?: string;
+  showActions?: boolean;
+  onClick?: () => void;
 }
 
+// Interactive descendants must not bubble to the card's own onClick, or a click
+// on a tag would both filter the list and navigate away from it.
+const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
+
 const ShortcutCard = (props: Props) => {
-  const { shortcut } = props;
+  const { shortcut, className, showActions, onClick } = props;
   const { t } = useTranslation();
   const userStore = useUserStore();
   const viewStore = useViewStore();
@@ -32,18 +39,27 @@ const ShortcutCard = (props: Props) => {
     userStore.getOrFetchUserById(shortcut.creatorId);
   }, []);
 
-  const handleCopyButtonClick = () => {
+  const handleCopyButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     copy(shortcutLink);
     toast.success("Shortcut link copied to clipboard.");
   };
 
   return (
-    <Card className={classNames("group p-4 w-full flex flex-col justify-start items-start hover:shadow-md transition-shadow duration-200")}>
+    <Card
+      className={cn(
+        "group p-3 w-full flex flex-col justify-start items-start transition-colors",
+        onClick && "cursor-pointer hover:bg-accent/50",
+        className,
+      )}
+      onClick={onClick}
+    >
       <div className="w-full flex flex-row justify-between items-center">
         <div className="w-[calc(100%-16px)] flex flex-row justify-start items-center mr-1 shrink-0">
           <Link
-            className={classNames("w-8 h-8 flex justify-center items-center overflow-clip shrink-0 rounded")}
+            className="w-8 h-8 flex justify-center items-center overflow-clip shrink-0 rounded-sm"
             to={`/shortcut/${shortcut.id}`}
+            onClick={stopPropagation}
             viewTransition
           >
             <LinkFavicon url={shortcut.link} />
@@ -51,18 +67,16 @@ const ShortcutCard = (props: Props) => {
           <div className="ml-3 w-[calc(100%-24px)] flex flex-col justify-start items-start">
             <div className="w-full flex flex-row justify-start items-center leading-tight">
               <a
-                className={classNames(
-                  "max-w-[calc(100%-36px)] flex flex-row justify-start items-center mr-1 hover:opacity-80 hover:underline transition-all",
-                )}
+                className="max-w-[calc(100%-36px)] flex flex-row justify-start items-center mr-1 hover:opacity-80 hover:underline transition-all"
                 target="_blank"
                 href={shortcutLink}
+                onClick={stopPropagation}
               >
                 <div className="truncate">
-                  <span className="text-foreground font-medium">{shortcut.title}</span>
                   {shortcut.title ? (
-                    <span className="text-muted-foreground ml-1">({shortcut.name})</span>
+                    <span className="text-foreground font-medium">{shortcut.title}</span>
                   ) : (
-                    <span className="truncate text-foreground font-medium">{shortcut.name}</span>
+                    <span className="shortcut-name truncate text-foreground font-medium">s/{shortcut.name}</span>
                   )}
                 </div>
                 <span className="hidden group-hover:block ml-1 shrink-0">
@@ -73,7 +87,7 @@ const ShortcutCard = (props: Props) => {
                 <TooltipTrigger asChild>
                   <button
                     className="hidden group-hover:block text-muted-foreground hover:text-foreground transition-colors"
-                    onClick={() => handleCopyButtonClick()}
+                    onClick={handleCopyButtonClick}
                   >
                     <Icon.Clipboard className="w-4 h-auto" />
                   </button>
@@ -83,27 +97,36 @@ const ShortcutCard = (props: Props) => {
                 </TooltipContent>
               </Tooltip>
             </div>
+            {shortcut.title && (
+              <span className="shortcut-name leading-tight text-sm truncate text-muted-foreground">s/{shortcut.name}</span>
+            )}
             <a
               className="pr-4 leading-tight w-full text-sm truncate text-muted-foreground hover:underline transition-all"
               href={shortcut.link}
               target="_blank"
+              onClick={stopPropagation}
             >
               {shortcut.link}
             </a>
           </div>
         </div>
-        <div className="h-full pt-2 flex flex-row justify-end items-start">
-          <ShortcutActionsDropdown shortcut={shortcut} />
-        </div>
+        {showActions && (
+          <div className="h-full pt-2 flex flex-row justify-end items-start" onClick={stopPropagation}>
+            <ShortcutActionsDropdown shortcut={shortcut} />
+          </div>
+        )}
       </div>
-      <div className="mt-3 w-full flex flex-row justify-start items-start gap-2 truncate">
+      <div className="mt-2 w-full flex flex-row justify-start items-start gap-1.5 truncate">
         {shortcut.tags.map((tag) => {
           return (
             <Badge
               key={tag}
               variant="secondary"
               className="max-w-[8rem] truncate cursor-pointer hover:bg-secondary/80 transition-colors"
-              onClick={() => viewStore.setFilter({ tag: tag })}
+              onClick={(e) => {
+                stopPropagation(e);
+                viewStore.setFilter({ tag: tag });
+              }}
             >
               #{tag}
             </Badge>
@@ -111,7 +134,7 @@ const ShortcutCard = (props: Props) => {
         })}
         {shortcut.tags.length === 0 && <span className="text-muted-foreground text-sm italic">No tags</span>}
       </div>
-      <div className="w-full mt-3 flex gap-3 overflow-x-auto">
+      <div className="w-full mt-2 flex gap-3 overflow-x-auto">
         <Tooltip>
           <TooltipTrigger asChild>
             <Avatar className="h-6 w-6">
@@ -126,7 +149,10 @@ const ShortcutCard = (props: Props) => {
           <TooltipTrigger asChild>
             <div
               className="flex flex-row justify-start items-center gap-1 text-muted-foreground text-sm cursor-pointer hover:text-foreground transition-colors"
-              onClick={() => viewStore.setFilter({ visibility: shortcut.visibility })}
+              onClick={(e) => {
+                stopPropagation(e);
+                viewStore.setFilter({ visibility: shortcut.visibility });
+              }}
             >
               <VisibilityIcon className="w-4 h-auto" visibility={shortcut.visibility} />
               {t(`shortcut.visibility.${shortcut.visibility.toLowerCase()}.self`)}
@@ -141,6 +167,7 @@ const ShortcutCard = (props: Props) => {
             <Link
               className="flex flex-row justify-start items-center gap-1 text-muted-foreground text-sm hover:text-foreground transition-colors"
               to={`/shortcut/${shortcut.id}#analytics`}
+              onClick={stopPropagation}
               viewTransition
             >
               <Icon.BarChart2 className="w-4 h-auto" />

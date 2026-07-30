@@ -234,7 +234,7 @@ const CreateCollectionDrawer: React.FC<Props> = (props: Props) => {
                   return (
                     <ShortcutView
                       key={shortcut.id}
-                      className="!w-auto select-none max-w-[40%] cursor-pointer bg-muted shadow"
+                      className="!w-auto select-none max-w-[40%] cursor-pointer bg-muted"
                       shortcut={shortcut}
                       onClick={() => {
                         setSelectedShortcuts([...selectedShortcuts.filter((selectedShortcut) => selectedShortcut.id !== shortcut.id)]);

@@ -19,7 +19,7 @@ const AccountSection: React.FC = () => {
         <p className="text-2xl shrink-0 font-semibold text-foreground">{t("common.account")}</p>
         <p className="flex flex-row justify-start items-center mt-2 text-foreground">
           <span className="text-xl">{currentUser.nickname}</span>
-          {isAdmin && <span className="ml-2 bg-blue-600 text-white px-2 leading-6 text-sm rounded-full">Admin</span>}
+          {isAdmin && <span className="ml-2 bg-primary text-primary-foreground px-2 leading-6 text-sm rounded-full">Admin</span>}
         </p>
         <p className="flex flex-row justify-start items-center text-foreground">
           <span className="mr-3 text-muted-foreground">{t("common.email")}: </span>
