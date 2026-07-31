@@ -13,6 +13,10 @@ type Driver interface {
 	GetDB() *sql.DB
 	Close() error
 
+	// BeginRestore starts a transaction that replaces the whole Workspace with
+	// the contents of a Backup, preserving IDs and timestamps verbatim.
+	BeginRestore(ctx context.Context) (RestoreTx, error)
+
 	// MigrationHistory model related methods.
 	UpsertMigrationHistory(ctx context.Context, upsert *UpsertMigrationHistory) (*MigrationHistory, error)
 	ListMigrationHistories(ctx context.Context, find *FindMigrationHistory) ([]*MigrationHistory, error)
