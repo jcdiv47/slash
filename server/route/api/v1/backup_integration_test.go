@@ -1,8 +1,11 @@
 package v1
 
 import (
+	"bufio"
 	"bytes"
+	"compress/gzip"
 	"context"
+	"encoding/json"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +17,7 @@ import (
 
 	storepb "github.com/yourselfhosted/slash/proto/gen/store"
 	"github.com/yourselfhosted/slash/server/profile"
+	"github.com/yourselfhosted/slash/server/service/backup"
 	"github.com/yourselfhosted/slash/store"
 	teststore "github.com/yourselfhosted/slash/store/test"
 )
@@ -70,13 +74,78 @@ func newBackupTestServer(t *testing.T, ts *store.Store) *echo.Echo {
 
 func exportWithToken(t *testing.T, e *echo.Echo, token string) *httptest.ResponseRecorder {
 	t.Helper()
-	request := httptest.NewRequest(http.MethodGet, BackupExportPath, nil)
+	return exportWithQuery(t, e, token, "")
+}
+
+func exportWithQuery(t *testing.T, e *echo.Echo, token, query string) *httptest.ResponseRecorder {
+	t.Helper()
+	target := BackupExportPath
+	if query != "" {
+		target += "?" + query
+	}
+	request := httptest.NewRequest(http.MethodGet, target, nil)
 	if token != "" {
 		request.AddCookie(&http.Cookie{Name: AccessTokenCookieName, Value: token})
 	}
 	recorder := httptest.NewRecorder()
 	e.ServeHTTP(recorder, request)
 	return recorder
+}
+
+// exportedTables reads back the manifest of a downloaded backup.
+func exportedTables(t *testing.T, body []byte) []string {
+	t.Helper()
+	gzipReader, err := gzip.NewReader(bytes.NewReader(body))
+	require.NoError(t, err)
+	defer gzipReader.Close()
+
+	scanner := bufio.NewScanner(gzipReader)
+	require.True(t, scanner.Scan(), "backup has no manifest line")
+	manifest := &backup.Manifest{}
+	require.NoError(t, json.Unmarshal(scanner.Bytes(), manifest))
+	return manifest.Tables
+}
+
+// TestExportBackupExcludesActivitiesByDefault pins the privacy default at the
+// HTTP boundary: activity records carry visitor IP addresses, so a plain export
+// must leave them out and only the explicit opt-in may hand them over. See
+// docs/adr/0003-logical-domain-level-backups.md.
+func TestExportBackupExcludesActivitiesByDefault(t *testing.T) {
+	ctx := context.Background()
+	ts := teststore.NewTestingStore(ctx, t)
+	e := newBackupTestServer(t, ts)
+	adminToken := signIn(t, ts, "admin@slash.com", store.RoleAdmin)
+
+	_, err := ts.CreateActivity(ctx, &store.Activity{
+		CreatorID: 1,
+		CreatedTs: time.Now().Unix(),
+		Type:      store.ActivityShortcutView,
+		Level:     store.ActivityInfo,
+		Payload:   `{"shortcutId":1,"ip":"203.0.113.7"}`,
+	})
+	require.NoError(t, err)
+
+	t.Run("default export omits activity", func(t *testing.T) {
+		recorder := exportWithQuery(t, e, adminToken, "")
+		require.Equal(t, http.StatusOK, recorder.Code)
+		tables := exportedTables(t, recorder.Body.Bytes())
+		require.NotContains(t, tables, backup.TableActivity)
+		require.NotContains(t, recorder.Body.String(), "203.0.113.7")
+	})
+
+	t.Run("opting in includes activity", func(t *testing.T) {
+		recorder := exportWithQuery(t, e, adminToken, "activities=true")
+		require.Equal(t, http.StatusOK, recorder.Code)
+		require.Contains(t, exportedTables(t, recorder.Body.Bytes()), backup.TableActivity)
+	})
+
+	t.Run("any other value is not an opt-in", func(t *testing.T) {
+		for _, query := range []string{"activities=1", "activities=yes", "activities=TRUE", "activities="} {
+			recorder := exportWithQuery(t, e, adminToken, query)
+			require.Equal(t, http.StatusOK, recorder.Code)
+			require.NotContains(t, exportedTables(t, recorder.Body.Bytes()), backup.TableActivity, "query %q", query)
+		}
+	})
 }
 
 // TestExportBackupRequiresAdmin is the security boundary for this endpoint: a

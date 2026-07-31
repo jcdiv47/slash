@@ -24,5 +24,8 @@ and can dwarf everything else. It is also readable and greppable once unzipped.
   would silently drop it from every backup.
 - Any future engine-specific encoding in a driver is a portability hazard. The
   full CI matrix (sqlite↔postgres, both directions) exists to catch exactly that.
-- `activity` is included by default, so a default backup contains the IP
-  addresses in every view record. Excluding it is opt-in.
+- `activity` is excluded by default, because every view record carries the
+  viewer's IP address and a backup is a file that gets copied around. Including
+  it is opt-in, and the UI says plainly what opting in hands over. A backup
+  without `activity` is still a complete backup: it is the one table a restore
+  tolerates the absence of.
