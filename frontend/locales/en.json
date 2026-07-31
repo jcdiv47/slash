@@ -84,6 +84,13 @@
       "member": {
         "self": "Member",
         "add": "Add member"
+      },
+      "backup": {
+        "self": "Backup",
+        "description": "Download every shortcut, collection, member and setting in this workspace as a single file. It can be restored onto an empty instance running this same version of Slash.",
+        "secrets-warning": "The file contains password hashes, access tokens and single sign-on secrets, unencrypted. Anyone holding it can sign in as any member. Store it somewhere safe.",
+        "include-activities": "Include activity history (larger file, contains visitor IP addresses)",
+        "export": "Export backup"
       }
     }
   }

@@ -64,6 +64,9 @@ func NewServer(ctx context.Context, profile *profile.Profile, store *store.Store
 	})
 
 	s.apiV1Service = apiv1.NewAPIV1Service(secret, profile, store, s.Profile.Port+1)
+	// Register the backup routes before the gateway's catch-all, as they stream
+	// a file rather than proxying to gRPC.
+	s.apiV1Service.RegisterBackupRoutes(e)
 	// Register gRPC gateway as api v1.
 	if err := s.apiV1Service.RegisterGateway(ctx, e); err != nil {
 		return nil, errors.Wrap(err, "failed to register gRPC gateway")

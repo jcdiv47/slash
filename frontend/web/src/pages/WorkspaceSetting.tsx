@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import WorkspaceBackupSection from "@/components/setting/WorkspaceBackupSection";
 import WorkspaceGeneralSettingSection from "@/components/setting/WorkspaceGeneralSettingSection";
 import WorkspaceMembersSection from "@/components/setting/WorkspaceMembersSection";
 import WorkspaceSecuritySection from "@/components/setting/WorkspaceSecuritySection";
@@ -22,6 +23,8 @@ const WorkspaceSetting = () => {
       <WorkspaceGeneralSettingSection />
       <Separator />
       <WorkspaceSecuritySection />
+      <Separator />
+      <WorkspaceBackupSection />
     </div>
   );
 };

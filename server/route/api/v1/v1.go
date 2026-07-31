@@ -28,6 +28,7 @@ type APIV1Service struct {
 	Profile *profile.Profile
 	Store   *store.Store
 
+	authProvider   *GRPCAuthInterceptor
 	grpcServer     *grpc.Server
 	grpcServerPort int
 }
@@ -44,6 +45,7 @@ func NewAPIV1Service(secret string, profile *profile.Profile, store *store.Store
 		Secret:         secret,
 		Profile:        profile,
 		Store:          store,
+		authProvider:   authProvider,
 		grpcServer:     grpcServer,
 		grpcServerPort: grpcServerPort,
 	}
