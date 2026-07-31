@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -22,9 +23,18 @@ import (
 // docs/adr/0003-logical-domain-level-backups.md.
 const BackupExportPath = "/api/v1/workspace/backup"
 
+// BackupRestorePath is the route a Backup is uploaded to. It is a plain HTTP
+// route for the same reason as the export: the file is streamed rather than
+// marshalled through gRPC.
+const BackupRestorePath = "/api/v1/workspace/backup:restore"
+
+// backupFormField is the multipart field the uploaded file arrives in.
+const backupFormField = "backup"
+
 // RegisterBackupRoutes registers the Backup routes on the given Echo instance.
 func (s *APIV1Service) RegisterBackupRoutes(e *echo.Echo) {
 	e.GET(BackupExportPath, s.exportBackup)
+	e.POST(BackupRestorePath, s.restoreBackup)
 }
 
 func (s *APIV1Service) exportBackup(c echo.Context) error {
@@ -59,6 +69,61 @@ func (s *APIV1Service) exportBackup(c echo.Context) error {
 		return nil
 	}
 	return nil
+}
+
+// restoreBackupResponse tells the caller what to do next. A restore replaces
+// secret_session, which the server caches at startup, so the instance must be
+// restarted rather than the server mutating cached state or killing itself. See
+// docs/adr/0004-restore-is-replace-all-into-an-empty-instance.md.
+type restoreBackupResponse struct {
+	Message         string `json:"message"`
+	RestartRequired bool   `json:"restartRequired"`
+}
+
+func (s *APIV1Service) restoreBackup(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	user, err := s.authenticateRequest(c)
+	if err != nil {
+		return err
+	}
+	if user.Role != store.RoleAdmin {
+		return echo.NewHTTPError(http.StatusForbidden, "only workspace admins may restore a backup")
+	}
+
+	fileHeader, err := c.FormFile(backupFormField)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("expected a %q file upload", backupFormField))
+	}
+	file, err := fileHeader.Open()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "failed to read the uploaded file")
+	}
+	defer file.Close()
+
+	if err := backup.Restore(ctx, s.Store, s.Profile, file); err != nil {
+		return restoreError(err)
+	}
+
+	slog.Warn("workspace restored from a backup, restart required", slog.Int("restoredBy", int(user.ID)))
+	return c.JSON(http.StatusOK, &restoreBackupResponse{
+		Message:         "Restore complete. Restart this Slash instance to finish: the session secret has been replaced, and you will need to sign in again.",
+		RestartRequired: true,
+	})
+}
+
+// restoreError maps a restore failure onto a status code, so that an operator
+// mistake reads as a 4xx with an actionable message rather than a 500.
+func restoreError(err error) error {
+	if errors.Is(err, backup.ErrNotEmpty) {
+		return echo.NewHTTPError(http.StatusConflict, err.Error())
+	}
+	var mismatch *backup.VersionMismatchError
+	if errors.As(err, &mismatch) {
+		return echo.NewHTTPError(http.StatusBadRequest, mismatch.Error())
+	}
+	slog.Error("failed to restore backup", slog.Any("error", err))
+	return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("failed to restore backup: %v", err))
 }
 
 // authenticateRequest resolves the caller of a plain HTTP route, reusing the

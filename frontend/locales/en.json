@@ -90,7 +90,14 @@
         "description": "Download every shortcut, collection, member and setting in this workspace as a single file. It can be restored onto an empty instance running this same version of Slash.",
         "secrets-warning": "The file contains password hashes, access tokens and single sign-on secrets, unencrypted. Anyone holding it can sign in as any member. Store it somewhere safe.",
         "include-activities": "Include activity history (larger file, contains visitor IP addresses)",
-        "export": "Export backup"
+        "export": "Export backup",
+        "restore": "Restore",
+        "restore-description": "Restore replaces everything in this workspace with the contents of a backup file. It only works on an empty instance running the same version of Slash that produced the file.",
+        "choose-file": "Choose backup file",
+        "restoring": "Restoring…",
+        "restore-confirm-title": "Restore from backup?",
+        "restore-confirm-content": "This replaces every shortcut, collection, member and setting in this workspace, including your own account. It cannot be undone. You will be signed out and the instance must be restarted afterwards.",
+        "restore-failed": "Restore failed."
       }
     }
   }

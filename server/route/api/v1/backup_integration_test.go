@@ -1,7 +1,9 @@
 package v1
 
 import (
+	"bytes"
 	"context"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -109,5 +111,88 @@ func TestExportBackupRequiresAdmin(t *testing.T) {
 	t.Run("garbage token may not export", func(t *testing.T) {
 		recorder := exportWithToken(t, e, "not-a-jwt")
 		require.Equal(t, http.StatusUnauthorized, recorder.Code)
+	})
+}
+
+// uploadBackup posts a backup file to the restore endpoint as multipart form data.
+func uploadBackup(t *testing.T, e *echo.Echo, token string, content []byte) *httptest.ResponseRecorder {
+	t.Helper()
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	part, err := writer.CreateFormFile("backup", "backup.ndjson.gz")
+	require.NoError(t, err)
+	_, err = part.Write(content)
+	require.NoError(t, err)
+	require.NoError(t, writer.Close())
+
+	request := httptest.NewRequest(http.MethodPost, BackupRestorePath, &body)
+	request.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
+	if token != "" {
+		request.AddCookie(&http.Cookie{Name: AccessTokenCookieName, Value: token})
+	}
+	recorder := httptest.NewRecorder()
+	e.ServeHTTP(recorder, request)
+	return recorder
+}
+
+// TestRestoreBackupEndpoint covers the round trip through HTTP, plus the status
+// codes an operator mistake should produce.
+func TestRestoreBackupEndpoint(t *testing.T) {
+	ctx := context.Background()
+
+	// Produce a real backup from a populated instance.
+	source := teststore.NewTestingStore(ctx, t)
+	sourceAdmin := signIn(t, source, "admin@slash.com", store.RoleAdmin)
+	sourceEcho := newBackupTestServer(t, source)
+	exported := exportWithToken(t, sourceEcho, sourceAdmin).Body.Bytes()
+	require.NotEmpty(t, exported)
+
+	t.Run("anonymous may not restore", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		recorder := uploadBackup(t, newBackupTestServer(t, target), "", exported)
+		require.Equal(t, http.StatusUnauthorized, recorder.Code)
+	})
+
+	t.Run("member may not restore", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		memberToken := signIn(t, target, "member@slash.com", store.RoleUser)
+		recorder := uploadBackup(t, newBackupTestServer(t, target), memberToken, exported)
+		require.Equal(t, http.StatusForbidden, recorder.Code)
+	})
+
+	t.Run("non-empty instance is a conflict", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		adminToken := signIn(t, target, "admin@slash.com", store.RoleAdmin)
+		_, err := target.CreateShortcut(ctx, &storepb.Shortcut{
+			CreatorId: 1, Name: "existing", Link: "https://example.com", Visibility: storepb.Visibility_WORKSPACE,
+		})
+		require.NoError(t, err)
+
+		recorder := uploadBackup(t, newBackupTestServer(t, target), adminToken, exported)
+		require.Equal(t, http.StatusConflict, recorder.Code)
+	})
+
+	t.Run("garbage upload is a bad request", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		adminToken := signIn(t, target, "admin@slash.com", store.RoleAdmin)
+		recorder := uploadBackup(t, newBackupTestServer(t, target), adminToken, []byte("not a backup"))
+		require.Equal(t, http.StatusBadRequest, recorder.Code)
+	})
+
+	t.Run("admin restores onto a fresh instance", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		adminToken := signIn(t, target, "installer@slash.com", store.RoleAdmin)
+
+		recorder := uploadBackup(t, newBackupTestServer(t, target), adminToken, exported)
+		require.Equal(t, http.StatusOK, recorder.Code)
+		require.Contains(t, recorder.Body.String(), "restartRequired")
+		require.Contains(t, recorder.Body.String(), "Restart this Slash instance")
+
+		// The installing admin has been replaced by the backup's own user.
+		users, err := target.ListUsers(ctx, &store.FindUser{})
+		require.NoError(t, err)
+		require.Len(t, users, 1)
+		require.Equal(t, "admin@slash.com", users[0].Email)
 	})
 }
