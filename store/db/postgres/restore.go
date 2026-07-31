@@ -17,11 +17,28 @@ type restoreTx struct {
 }
 
 func (d *DB) BeginRestore(ctx context.Context) (store.RestoreTx, error) {
-	tx, err := d.db.BeginTx(ctx, nil)
+	// A restore reads whether the target is empty and then deletes what it found.
+	// Under the default READ COMMITTED, the DELETE would see rows committed after
+	// that read and destroy them without anyone being told. SERIALIZABLE pins the
+	// transaction to one snapshot, so a row written in that window is neither
+	// visible to the DELETE nor lost by it, and any interleaving that genuinely
+	// could not have happened in some serial order fails the transaction outright.
+	tx, err := d.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
 		return nil, err
 	}
 	return &restoreTx{tx: tx}, nil
+}
+
+func (r *restoreTx) CountContent(ctx context.Context) (store.WorkspaceContent, error) {
+	var content store.WorkspaceContent
+	err := r.tx.QueryRowContext(ctx, `
+		SELECT
+			(SELECT COUNT(*) FROM shortcut),
+			(SELECT COUNT(*) FROM collection),
+			(SELECT COUNT(*) FROM "user")
+	`).Scan(&content.Shortcuts, &content.Collections, &content.Members)
+	return content, err
 }
 
 // deleteOrder lists tables children-first, which this schema requires:

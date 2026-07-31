@@ -46,10 +46,6 @@ func (e *VersionMismatchError) Error() string {
 // Workspace secret_session has been replaced and the server caches it at
 // startup.
 func Restore(ctx context.Context, s *store.Store, p *profile.Profile, r io.Reader) error {
-	if err := requireEmptyInstance(ctx, s); err != nil {
-		return err
-	}
-
 	gzipReader, err := gzip.NewReader(r)
 	if err != nil {
 		return errors.Wrap(err, "backup is not a valid gzip file")
@@ -78,6 +74,12 @@ func Restore(ctx context.Context, s *store.Store, p *profile.Profile, r io.Reade
 	// Safe after a successful commit, and the only thing that runs on any error
 	// path below.
 	defer func() { _ = restoreTx.Rollback() }()
+
+	// Inside the transaction, so that the emptiness this refuses to proceed
+	// without is still true by the time DeleteAll acts on it.
+	if err := requireEmptyInstance(ctx, restoreTx); err != nil {
+		return err
+	}
 
 	if err := restoreTx.DeleteAll(ctx); err != nil {
 		return errors.Wrap(err, "failed to clear the workspace")
@@ -172,23 +174,15 @@ func insertRecord(ctx context.Context, tx store.RestoreTx, record *Record) error
 	}
 }
 
-// requireEmptyInstance enforces the precondition from ADR 0004. One user is
-// allowed because restoring necessarily happens from a fresh install, where an
-// admin had to be created in order to sign in and start the restore.
-func requireEmptyInstance(ctx context.Context, s *store.Store) error {
-	shortcuts, err := s.ListShortcuts(ctx, &store.FindShortcut{})
+// requireEmptyInstance enforces the precondition from ADR 0004, reading the
+// target through the restore transaction so that no write can land between the
+// answer and the DeleteAll it authorises.
+func requireEmptyInstance(ctx context.Context, tx store.RestoreTx) error {
+	content, err := tx.CountContent(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to list shortcuts")
+		return errors.Wrap(err, "failed to inspect the target workspace")
 	}
-	collections, err := s.ListCollections(ctx, &store.FindCollection{})
-	if err != nil {
-		return errors.Wrap(err, "failed to list collections")
-	}
-	users, err := s.ListUsers(ctx, &store.FindUser{})
-	if err != nil {
-		return errors.Wrap(err, "failed to list users")
-	}
-	if len(shortcuts) > 0 || len(collections) > 0 || len(users) > 1 {
+	if !content.IsEmptyInstance() {
 		return ErrNotEmpty
 	}
 	return nil

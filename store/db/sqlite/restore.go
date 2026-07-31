@@ -14,14 +14,45 @@ import (
 
 type restoreTx struct {
 	tx *sql.Tx
+	// db is the dedicated handle this transaction runs on, closed when it ends.
+	db *sql.DB
 }
 
 func (d *DB) BeginRestore(ctx context.Context) (store.RestoreTx, error) {
-	tx, err := d.db.BeginTx(ctx, nil)
+	// A restore reads whether the target is empty and then deletes what it found,
+	// and nothing may commit in between. SQLite's default BEGIN is deferred: it
+	// takes the write lock at the first write, leaving exactly that window open.
+	// BEGIN IMMEDIATE takes it up front instead, making every other writer wait
+	// rather than interleave — but this driver reads the locking mode from the
+	// DSN when the connection is opened, and BeginTx cannot ask for it. So the
+	// restore gets a handle of its own, opened in immediate mode, which it closes
+	// when the transaction ends. Restores are rare and exclusive by nature, so
+	// the extra connection costs nothing worth counting.
+	db, err := sql.Open("sqlite", d.profile.DSN+connectionParams+"&_txlock=immediate")
 	if err != nil {
 		return nil, err
 	}
-	return &restoreTx{tx: tx}, nil
+	// One connection, so the transaction and its lock cannot end up split across
+	// a pool.
+	db.SetMaxOpenConns(1)
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+	return &restoreTx{tx: tx, db: db}, nil
+}
+
+func (r *restoreTx) CountContent(ctx context.Context) (store.WorkspaceContent, error) {
+	var content store.WorkspaceContent
+	err := r.tx.QueryRowContext(ctx, `
+		SELECT
+			(SELECT COUNT(*) FROM shortcut),
+			(SELECT COUNT(*) FROM collection),
+			(SELECT COUNT(*) FROM user)
+	`).Scan(&content.Shortcuts, &content.Collections, &content.Members)
+	return content, err
 }
 
 // deleteOrder lists tables children-first, so the deletes hold even where the
@@ -132,9 +163,15 @@ func (r *restoreTx) Finalize(_ context.Context) error {
 }
 
 func (r *restoreTx) Commit() error {
-	return r.tx.Commit()
+	err := r.tx.Commit()
+	// Releases the write lock the whole instance is waiting on, so it happens
+	// whether or not the commit worked.
+	_ = r.db.Close()
+	return err
 }
 
 func (r *restoreTx) Rollback() error {
-	return r.tx.Rollback()
+	err := r.tx.Rollback()
+	_ = r.db.Close()
+	return err
 }

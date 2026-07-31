@@ -21,6 +21,12 @@ cheaper and more honest.
 
 - The whole restore runs in one transaction with batched inserts, so a failure
   leaves the target exactly as it was.
+- Emptiness is decided inside that same transaction, and the transaction excludes
+  concurrent writers for its whole length rather than only while it writes. A
+  target found empty and then written to before the deletion would otherwise lose
+  that write with nobody told. SQLite gets this from `BEGIN IMMEDIATE`, which
+  needs a connection of its own because the driver reads the locking mode from
+  the DSN; Postgres gets it from `SERIALIZABLE`.
 - Restoring an old backup requires running that exact old version of Slash first.
   Backup filenames carry the version so operators can tell at a glance.
 - Because a restore replaces `secret_session`, which the server caches at
