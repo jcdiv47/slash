@@ -36,6 +36,10 @@ func (d *DB) UpsertUserSetting(ctx context.Context, upsert *storepb.UserSetting)
 }
 
 func (d *DB) ListUserSettings(ctx context.Context, find *store.FindUserSetting) ([]*storepb.UserSetting, error) {
+	return listUserSettings(ctx, d.db, find)
+}
+
+func listUserSettings(ctx context.Context, q queryer, find *store.FindUserSetting) ([]*storepb.UserSetting, error) {
 	where, args := []string{"1 = 1"}, []any{}
 
 	if v := find.Key; v != storepb.UserSettingKey_USER_SETTING_KEY_UNSPECIFIED {
@@ -52,7 +56,7 @@ func (d *DB) ListUserSettings(ctx context.Context, find *store.FindUserSetting) 
 			value
 		FROM user_setting
 		WHERE ` + strings.Join(where, " AND ")
-	rows, err := d.db.QueryContext(ctx, query, args...)
+	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

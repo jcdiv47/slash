@@ -113,6 +113,10 @@ func (d *DB) UpdateShortcut(ctx context.Context, update *store.UpdateShortcut) (
 }
 
 func (d *DB) ListShortcuts(ctx context.Context, find *store.FindShortcut) ([]*storepb.Shortcut, error) {
+	return listShortcuts(ctx, d.db, find)
+}
+
+func listShortcuts(ctx context.Context, q queryer, find *store.FindShortcut) ([]*storepb.Shortcut, error) {
 	where, args := []string{"1 = 1"}, []any{}
 	if v := find.ID; v != nil {
 		where, args = append(where, "id = ?"), append(args, *v)
@@ -135,7 +139,7 @@ func (d *DB) ListShortcuts(ctx context.Context, find *store.FindShortcut) ([]*st
 		where, args = append(where, "tag LIKE ?"), append(args, "%"+*v+"%")
 	}
 
-	rows, err := d.db.QueryContext(ctx, `
+	rows, err := q.QueryContext(ctx, `
 		SELECT
 			id,
 			creator_id,

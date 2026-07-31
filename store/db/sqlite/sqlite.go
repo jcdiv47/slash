@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/pkg/errors"
@@ -47,6 +48,12 @@ func NewDB(profile *profile.Profile) (store.Driver, error) {
 	driver := DB{db: sqliteDB, profile: profile}
 
 	return &driver, nil
+}
+
+// queryer is the read half shared by *sql.DB and *sql.Tx, so the list helpers
+// below can serve both an ordinary request and an export snapshot.
+type queryer interface {
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 }
 
 func (d *DB) GetDB() *sql.DB {

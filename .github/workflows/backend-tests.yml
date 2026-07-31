@@ -75,6 +75,9 @@ jobs:
         env:
           DRIVER: postgres
           DSN: postgresql://postgres:postgres@localhost:5432/slash?sslmode=disable
-        run: go test -v ./store/... ./server/service/backup/...
+        # -p 1: both suites reset and reseed the one Postgres database named by
+        # DSN, so they cannot run as parallel packages the way they can on
+        # SQLite, where each test gets its own file.
+        run: go test -v -p 1 ./store/... ./server/service/backup/...
       - name: Run cross-driver restore tests
         run: go test -v -run TestCrossDriver ./server/service/backup/...

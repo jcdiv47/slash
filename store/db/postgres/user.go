@@ -87,6 +87,10 @@ func (d *DB) UpdateUser(ctx context.Context, update *store.UpdateUser) (*store.U
 }
 
 func (d *DB) ListUsers(ctx context.Context, find *store.FindUser) ([]*store.User, error) {
+	return listUsers(ctx, d.db, find)
+}
+
+func listUsers(ctx context.Context, q queryer, find *store.FindUser) ([]*store.User, error) {
 	where, args := []string{"1 = 1"}, []any{}
 
 	if v := find.ID; v != nil {
@@ -119,7 +123,7 @@ func (d *DB) ListUsers(ctx context.Context, find *store.FindUser) ([]*store.User
 		WHERE ` + strings.Join(where, " AND ") + `
 		ORDER BY updated_ts DESC, created_ts DESC
 	`
-	rows, err := d.db.QueryContext(ctx, query, args...)
+	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

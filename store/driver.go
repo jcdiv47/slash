@@ -17,6 +17,10 @@ type Driver interface {
 	// the contents of a Backup, preserving IDs and timestamps verbatim.
 	BeginRestore(ctx context.Context) (RestoreTx, error)
 
+	// BeginExport starts a read-only transaction that reads every table a Backup
+	// covers from one consistent snapshot.
+	BeginExport(ctx context.Context) (ExportTx, error)
+
 	// MigrationHistory model related methods.
 	UpsertMigrationHistory(ctx context.Context, upsert *UpsertMigrationHistory) (*MigrationHistory, error)
 	ListMigrationHistories(ctx context.Context, find *FindMigrationHistory) ([]*MigrationHistory, error)

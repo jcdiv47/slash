@@ -37,6 +37,10 @@ func (d *DB) UpsertWorkspaceSetting(ctx context.Context, upsert *storepb.Workspa
 }
 
 func (d *DB) ListWorkspaceSettings(ctx context.Context, find *store.FindWorkspaceSetting) ([]*storepb.WorkspaceSetting, error) {
+	return listWorkspaceSettings(ctx, d.db, find)
+}
+
+func listWorkspaceSettings(ctx context.Context, q queryer, find *store.FindWorkspaceSetting) ([]*storepb.WorkspaceSetting, error) {
 	where, args := []string{"1 = 1"}, []interface{}{}
 
 	if find.Key != storepb.WorkspaceSettingKey_WORKSPACE_SETTING_KEY_UNSPECIFIED {
@@ -49,7 +53,7 @@ func (d *DB) ListWorkspaceSettings(ctx context.Context, find *store.FindWorkspac
 			value
 		FROM workspace_setting
 		WHERE ` + strings.Join(where, " AND ")
-	rows, err := d.db.QueryContext(ctx, query, args...)
+	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

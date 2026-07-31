@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -68,15 +69,8 @@ func (d *DB) ListActivities(ctx context.Context, find *store.FindActivity) ([]*s
 
 	list := []*store.Activity{}
 	for rows.Next() {
-		activity := &store.Activity{}
-		if err := rows.Scan(
-			&activity.ID,
-			&activity.CreatorID,
-			&activity.CreatedTs,
-			&activity.Type,
-			&activity.Level,
-			&activity.Payload,
-		); err != nil {
+		activity, err := scanActivity(rows)
+		if err != nil {
 			return nil, err
 		}
 
@@ -88,4 +82,51 @@ func (d *DB) ListActivities(ctx context.Context, find *store.FindActivity) ([]*s
 	}
 
 	return list, nil
+}
+
+// scanActivities hands every Activity to fn one row at a time, so an export of a
+// Workspace with millions of them never holds more than a single row. Rows come
+// back in ID order so the same data always produces the same Backup.
+func scanActivities(ctx context.Context, q queryer, fn func(*store.Activity) error) error {
+	rows, err := q.QueryContext(ctx, `
+		SELECT
+			id,
+			creator_id,
+			created_ts,
+			type,
+			level,
+			payload
+		FROM activity
+		ORDER BY id ASC
+	`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		activity, err := scanActivity(rows)
+		if err != nil {
+			return err
+		}
+		if err := fn(activity); err != nil {
+			return err
+		}
+	}
+	return rows.Err()
+}
+
+func scanActivity(rows *sql.Rows) (*store.Activity, error) {
+	activity := &store.Activity{}
+	if err := rows.Scan(
+		&activity.ID,
+		&activity.CreatorID,
+		&activity.CreatedTs,
+		&activity.Type,
+		&activity.Level,
+		&activity.Payload,
+	); err != nil {
+		return nil, err
+	}
+	return activity, nil
 }

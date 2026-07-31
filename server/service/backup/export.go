@@ -27,8 +27,11 @@ type ExportOptions struct {
 
 // Export writes a complete backup of the Workspace to w.
 //
-// Rows are streamed table by table, so memory stays flat regardless of how large
-// activity has grown. The caller is responsible for closing w.
+// Every table is read from one snapshot, so a Workspace that changes while the
+// export runs still yields a file representing a single point in time. Rows are
+// streamed table by table, and activity — the table that grows without bound —
+// a row at a time, so memory stays flat however large the Workspace has grown.
+// The caller is responsible for closing w.
 //
 // The resulting file contains password hashes, the Workspace secret_session, IdP
 // client secrets, and access tokens, all unredacted. See
@@ -38,6 +41,14 @@ func Export(ctx context.Context, s *store.Store, p *profile.Profile, opts Export
 	if err != nil {
 		return errors.Wrap(err, "failed to get current schema version")
 	}
+
+	tx, err := s.BeginExport(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to open export snapshot")
+	}
+	// An export writes nothing, so there is never anything to commit; this only
+	// releases the snapshot and its connection.
+	defer func() { _ = tx.Rollback() }()
 
 	// Copy rather than reslice: this ends up in the Manifest, and must not share
 	// a backing array with the package-level order.
@@ -64,7 +75,7 @@ func Export(ctx context.Context, s *store.Store, p *profile.Profile, opts Export
 	}
 
 	for _, table := range tables {
-		if err := exportTable(ctx, s, table, encoder); err != nil {
+		if err := exportTable(ctx, tx, table, encoder); err != nil {
 			return errors.Wrapf(err, "failed to export table %q", table)
 		}
 	}
@@ -76,14 +87,14 @@ func Export(ctx context.Context, s *store.Store, p *profile.Profile, opts Export
 	return nil
 }
 
-func exportTable(ctx context.Context, s *store.Store, table string, encoder *json.Encoder) error {
+func exportTable(ctx context.Context, tx store.ExportTx, table string, encoder *json.Encoder) error {
 	write := func(data []byte) error {
 		return encoder.Encode(&Record{Table: table, Data: data})
 	}
 
 	switch table {
 	case TableUser:
-		users, err := s.ListUsers(ctx, &store.FindUser{})
+		users, err := tx.ListUsers(ctx)
 		if err != nil {
 			return err
 		}
@@ -97,43 +108,39 @@ func exportTable(ctx context.Context, s *store.Store, table string, encoder *jso
 			}
 		}
 	case TableUserSetting:
-		userSettings, err := s.ListUserSettings(ctx, &store.FindUserSetting{})
+		userSettings, err := tx.ListUserSettings(ctx)
 		if err != nil {
 			return err
 		}
 		return writeMessages(userSettings, write)
 	case TableWorkspaceSetting:
-		workspaceSettings, err := s.ListWorkspaceSettings(ctx, &store.FindWorkspaceSetting{})
+		workspaceSettings, err := tx.ListWorkspaceSettings(ctx)
 		if err != nil {
 			return err
 		}
 		return writeMessages(workspaceSettings, write)
 	case TableShortcut:
-		shortcuts, err := s.ListShortcuts(ctx, &store.FindShortcut{})
+		shortcuts, err := tx.ListShortcuts(ctx)
 		if err != nil {
 			return err
 		}
 		return writeMessages(shortcuts, write)
 	case TableCollection:
-		collections, err := s.ListCollections(ctx, &store.FindCollection{})
+		collections, err := tx.ListCollections(ctx)
 		if err != nil {
 			return err
 		}
 		return writeMessages(collections, write)
 	case TableActivity:
-		activities, err := s.ListActivities(ctx, &store.FindActivity{})
-		if err != nil {
-			return err
-		}
-		for _, activity := range activities {
+		// Streamed rather than listed: activity grows on every Shortcut view, so
+		// it is the one table a Workspace can outgrow memory with.
+		return tx.ScanActivities(ctx, func(activity *store.Activity) error {
 			data, err := json.Marshal(activity)
 			if err != nil {
 				return err
 			}
-			if err := write(data); err != nil {
-				return err
-			}
-		}
+			return write(data)
+		})
 	default:
 		return errors.Errorf("unknown table %q", table)
 	}
