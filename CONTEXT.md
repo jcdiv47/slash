@@ -93,7 +93,9 @@ _Avoid_: Dump, snapshot, archive
 
 **Manifest**:
 The self-describing header of a Backup, stating what the file contains and which
-version of Slash produced it.
+version of Slash produced it. A Restore holds the file to this account of itself:
+the Manifest must declare every table but Activity, and the file may carry
+records only for what the Manifest declares.
 _Avoid_: Metadata, header
 
 **Export**:

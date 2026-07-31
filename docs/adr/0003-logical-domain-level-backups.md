@@ -29,3 +29,14 @@ and can dwarf everything else. It is also readable and greppable once unzipped.
   it is opt-in, and the UI says plainly what opting in hands over. A backup
   without `activity` is still a complete backup: it is the one table a restore
   tolerates the absence of.
+- Because the manifest names the tables the file carries, a restore can hold the
+  file to its own account of itself before committing: the manifest must declare
+  every table but `activity`, once each and in write order, and the records must
+  match — none naming a table the manifest left out, none arriving out of the
+  declared order. A file cut short is caught separately, by gzip and by the line
+  reader. Adding a table to `orderedTables` therefore makes it required.
+- What this cannot catch is a well-formed file that is simply missing rows: the
+  manifest carries table names, not row counts, so a backup whose `shortcut`
+  records were all dropped still restores as an empty-but-declared table. Row
+  counts in the manifest would close that, at the cost of counting every table
+  inside the export snapshot before the first byte is written.

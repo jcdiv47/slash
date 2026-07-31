@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"strings"
 
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -48,7 +49,7 @@ func (e *VersionMismatchError) Error() string {
 func Restore(ctx context.Context, s *store.Store, p *profile.Profile, r io.Reader) error {
 	gzipReader, err := gzip.NewReader(r)
 	if err != nil {
-		return errors.Wrap(err, "backup is not a valid gzip file")
+		return malformedBackup("it is not a valid gzip file: %v", err)
 	}
 	defer gzipReader.Close()
 
@@ -85,6 +86,10 @@ func Restore(ctx context.Context, s *store.Store, p *profile.Profile, r io.Reade
 		return errors.Wrap(err, "failed to clear the workspace")
 	}
 
+	// The position in orderedTables of the last record seen. Records replay in
+	// file order, which is what puts a row in place before anything referencing
+	// it, so that order has to hold in the file as well as in the manifest.
+	lastPosition := 0
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		if len(line) == 0 {
@@ -92,14 +97,28 @@ func Restore(ctx context.Context, s *store.Store, p *profile.Profile, r io.Reade
 		}
 		record := &Record{}
 		if err := json.Unmarshal(line, record); err != nil {
-			return errors.Wrap(err, "failed to parse backup record")
+			return malformedBackup("one of its records is not readable: %v", err)
 		}
+		// The manifest is the file's account of itself; a record for a table it
+		// does not declare means the two disagree, and we cannot tell which is
+		// wrong.
+		if !manifest.declares(record.Table) {
+			return malformedBackup("it carries a %q record its manifest does not declare", record.Table)
+		}
+		position := indexOfTable(record.Table)
+		if position < lastPosition {
+			return malformedBackup("it carries a %q record out of order; records must appear in the order %s", record.Table, strings.Join(orderedTables, ", "))
+		}
+		lastPosition = position
+
 		if err := insertRecord(ctx, restoreTx, record); err != nil {
 			return errors.Wrapf(err, "failed to restore a %q record", record.Table)
 		}
 	}
+	// A read that fails part-way through is a file that was cut short — a
+	// half-finished upload or a truncated copy — not a fault in this instance.
 	if err := scanner.Err(); err != nil {
-		return errors.Wrap(err, "failed to read backup")
+		return malformedBackup("it stops part-way through: %v", err)
 	}
 
 	if err := restoreTx.Finalize(ctx); err != nil {
@@ -117,16 +136,19 @@ func Restore(ctx context.Context, s *store.Store, p *profile.Profile, r io.Reade
 func readManifest(scanner *bufio.Scanner) (*Manifest, error) {
 	if !scanner.Scan() {
 		if err := scanner.Err(); err != nil {
-			return nil, errors.Wrap(err, "failed to read backup")
+			return nil, malformedBackup("it stops before its manifest: %v", err)
 		}
-		return nil, errors.New("backup is empty")
+		return nil, malformedBackup("it is empty")
 	}
 	manifest := &Manifest{}
 	if err := json.Unmarshal(scanner.Bytes(), manifest); err != nil {
-		return nil, errors.Wrap(err, "backup has no readable manifest")
+		return nil, malformedBackup("its manifest is not readable: %v", err)
 	}
 	if manifest.Format != FormatVersion {
-		return nil, errors.Errorf("unsupported backup format %d, this version of Slash reads format %d", manifest.Format, FormatVersion)
+		return nil, malformedBackup("it is in backup format %d, and this version of Slash reads format %d", manifest.Format, FormatVersion)
+	}
+	if err := manifest.validate(); err != nil {
+		return nil, err
 	}
 	return manifest, nil
 }

@@ -24,6 +24,27 @@ import (
 
 const testSecret = "test-secret"
 
+// incompleteBackup is a well-formed gzip carrying a manifest that never mentions
+// the shortcut table — the shape a hand-edited or partially written file takes,
+// and the one an operator most needs a clear answer about.
+func incompleteBackup(t *testing.T) []byte {
+	t.Helper()
+
+	manifest := &backup.Manifest{
+		Format: backup.FormatVersion,
+		Tables: []string{backup.TableUser, backup.TableUserSetting, backup.TableWorkspaceSetting},
+	}
+	var plain bytes.Buffer
+	require.NoError(t, json.NewEncoder(&plain).Encode(manifest))
+
+	var compressed bytes.Buffer
+	gzipWriter := gzip.NewWriter(&compressed)
+	_, err := gzipWriter.Write(plain.Bytes())
+	require.NoError(t, err)
+	require.NoError(t, gzipWriter.Close())
+	return compressed.Bytes()
+}
+
 // signIn creates a user of the given role and returns a usable access token,
 // registering it the way the auth service does so the interceptor accepts it.
 func signIn(t *testing.T, ts *store.Store, email string, role store.Role) string {
@@ -247,6 +268,20 @@ func TestRestoreBackupEndpoint(t *testing.T) {
 		adminToken := signIn(t, target, "admin@slash.com", store.RoleAdmin)
 		recorder := uploadBackup(t, newBackupTestServer(t, target), adminToken, []byte("not a backup"))
 		require.Equal(t, http.StatusBadRequest, recorder.Code)
+	})
+
+	t.Run("incomplete backup is a bad request that says what is wrong", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		adminToken := signIn(t, target, "admin@slash.com", store.RoleAdmin)
+
+		recorder := uploadBackup(t, newBackupTestServer(t, target), adminToken, incompleteBackup(t))
+		require.Equal(t, http.StatusBadRequest, recorder.Code)
+		require.Contains(t, recorder.Body.String(), "shortcut", "the operator should be told which table is missing")
+
+		// And the admin who tried is still there.
+		users, err := target.ListUsers(ctx, &store.FindUser{})
+		require.NoError(t, err)
+		require.Len(t, users, 1)
 	})
 
 	t.Run("admin restores onto a fresh instance", func(t *testing.T) {

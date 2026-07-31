@@ -122,6 +122,11 @@ func restoreError(err error) error {
 	if errors.As(err, &mismatch) {
 		return echo.NewHTTPError(http.StatusBadRequest, mismatch.Error())
 	}
+	// The wrong file, or a truncated one. That is the operator's to fix, so it
+	// reads back to them rather than into this instance's error log.
+	if errors.Is(err, backup.ErrMalformedBackup) {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
 	slog.Error("failed to restore backup", slog.Any("error", err))
 	return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("failed to restore backup: %v", err))
 }
