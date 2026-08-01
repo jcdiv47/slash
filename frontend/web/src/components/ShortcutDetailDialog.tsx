@@ -14,7 +14,7 @@ import { useShortcutStore, useUserStore, useViewStore } from "@/stores";
 import { Visibility } from "@/types/proto/api/v1/common";
 import { GetShortcutAnalyticsResponse, Shortcut } from "@/types/proto/api/v1/shortcut_service";
 import { Role } from "@/types/proto/api/v1/user_service";
-import CreateShortcutDrawer from "./CreateShortcutDrawer";
+import EditShortcutDialog from "./EditShortcutDialog";
 import GenerateQRCodeDialog from "./GenerateQRCodeDialog";
 import Icon from "./Icon";
 import LinkFavicon from "./LinkFavicon";
@@ -53,7 +53,7 @@ const ShortcutDetailDialog = ({ shortcut, onClose }: Props) => {
   const [analytics, setAnalytics] = useState<GetShortcutAnalyticsResponse | null>(null);
   const [breakdown, setBreakdown] = useState<Breakdown>("references");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false);
-  const [showEditDrawer, setShowEditDrawer] = useState<boolean>(false);
+  const [showEditDialog, setShowEditDialog] = useState<boolean>(false);
   const [showQRCodeDialog, setShowQRCodeDialog] = useState<boolean>(false);
   const creator = userStore.getUserById(shortcut.creatorId);
   const havePermission = currentUser.role === Role.ADMIN || shortcut.creatorId === currentUser.id;
@@ -161,7 +161,7 @@ const ShortcutDetailDialog = ({ shortcut, onClose }: Props) => {
                 QR Code
               </Button>
               {havePermission && (
-                <Button variant="outline" size="sm" className="h-8" onClick={() => setShowEditDrawer(true)}>
+                <Button variant="outline" size="sm" className="h-8" onClick={() => setShowEditDialog(true)}>
                   <Icon.Edit className="w-4 h-auto" />
                   {t("common.edit")}
                 </Button>
@@ -291,13 +291,7 @@ const ShortcutDetailDialog = ({ shortcut, onClose }: Props) => {
 
       {showQRCodeDialog && <GenerateQRCodeDialog shortcut={shortcut} onClose={() => setShowQRCodeDialog(false)} />}
 
-      {showEditDrawer && (
-        <CreateShortcutDrawer
-          shortcutId={shortcut.id}
-          onClose={() => setShowEditDrawer(false)}
-          onConfirm={() => setShowEditDrawer(false)}
-        />
-      )}
+      {showEditDialog && <EditShortcutDialog shortcut={shortcut} onClose={() => setShowEditDialog(false)} />}
     </>
   );
 };

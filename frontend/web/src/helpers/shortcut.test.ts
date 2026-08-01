@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Visibility } from "@/types/proto/api/v1/common";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
-import { countTags, formatCount, groupBySite, matchesQuery, normalizeName, splitLink } from "./shortcut";
+import { checkName, countTags, formatCount, groupBySite, matchesQuery, normalizeName, splitLink } from "./shortcut";
 
 const shortcut = (partial: Partial<Shortcut>) => Shortcut.fromPartial({ visibility: Visibility.WORKSPACE, ...partial });
 
@@ -50,6 +50,35 @@ describe("normalizeName", () => {
 
   it("never starts with a dash", () => {
     expect(normalizeName("  leading")).toBe("leading");
+  });
+});
+
+describe("checkName", () => {
+  const shortcuts = [shortcut({ id: 1, name: "grafana" }), shortcut({ id: 2, name: "grafana2" }), shortcut({ id: 3, name: "runbook" })];
+
+  it("says nothing about an empty Name", () => {
+    expect(checkName("", shortcuts)).toEqual({ isTaken: false, suggestion: "" });
+  });
+
+  it("accepts a Name no Shortcut holds", () => {
+    expect(checkName("payroll", shortcuts)).toEqual({ isTaken: false, suggestion: "" });
+  });
+
+  it("rejects a Name that is taken and suggests the first free suffix", () => {
+    expect(checkName("grafana", shortcuts)).toEqual({ isTaken: true, suggestion: "grafana3" });
+  });
+
+  it("lets a Shortcut keep its own Name while it is being edited", () => {
+    expect(checkName("grafana", shortcuts, 1)).toEqual({ isTaken: false, suggestion: "" });
+  });
+
+  it("still rejects another Shortcut's Name while editing", () => {
+    expect(checkName("runbook", shortcuts, 1)).toEqual({ isTaken: true, suggestion: "runbook2" });
+  });
+
+  it("suggests nothing when every suffix within reach is taken", () => {
+    const crowded = Array.from({ length: 100 }, (_, i) => shortcut({ id: i + 1, name: i === 0 ? "a" : `a${i + 1}` }));
+    expect(checkName("a", crowded)).toEqual({ isTaken: true, suggestion: "" });
   });
 });
 

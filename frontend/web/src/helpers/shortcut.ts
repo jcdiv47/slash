@@ -33,6 +33,31 @@ export const normalizeName = (value: string) =>
     .replace(/[^a-z0-9._-]+/g, "-")
     .replace(/^-+/, "");
 
+export interface NameCheck {
+  isTaken: boolean;
+  // One alternative rather than a list: a Member either takes it or keeps
+  // typing. Empty when the Name is free, or when nothing nearby is.
+  suggestion: string;
+}
+
+const SUGGESTION_LIMIT = 100;
+
+// Whether a Name is free, answered from the Shortcuts already loaded. The
+// server is still the authority — this only saves a round trip while typing.
+// `ownId` is the Shortcut being edited, which does not collide with itself.
+export const checkName = (name: string, shortcuts: Shortcut[], ownId?: number): NameCheck => {
+  const taken = new Set(shortcuts.filter((shortcut) => shortcut.id !== ownId).map((shortcut) => shortcut.name));
+  if (!name || !taken.has(name)) {
+    return { isTaken: false, suggestion: "" };
+  }
+  for (let suffix = 2; suffix < SUGGESTION_LIMIT; suffix++) {
+    if (!taken.has(`${name}${suffix}`)) {
+      return { isTaken: true, suggestion: `${name}${suffix}` };
+    }
+  }
+  return { isTaken: true, suggestion: "" };
+};
+
 export const matchesQuery = (shortcut: Shortcut, query: string) => {
   const needle = query.trim().toLowerCase();
   if (!needle) {

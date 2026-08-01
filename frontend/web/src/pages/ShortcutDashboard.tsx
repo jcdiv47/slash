@@ -84,6 +84,12 @@ const ShortcutDashboard: React.FC = () => {
               ))}
             </div>
             <ViewSetting />
+            {/* Creating acts on the collection below, so it sits at the end of
+                the row that shapes it rather than up in the header. */}
+            <Button size="sm" className="h-8 px-2.5" onClick={() => setShowCreateDialog(true)}>
+              <Icon.Plus className="w-4 h-auto" />
+              <span className="hidden md:inline">New shortcut</span>
+            </Button>
           </div>
         </div>
 

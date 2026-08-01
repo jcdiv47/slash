@@ -11,8 +11,9 @@ opening a Shortcut a dialog over the list it came from.
 ## Consequences
 
 - There is exactly one header. It carries the mark, the section switcher and the
-  Member menu everywhere; search, Display Style and "New shortcut" appear only on
-  `/shortcuts`, because they act on the Shortcut collection. Nothing hides the
+  Member menu everywhere; search and Display Style appear only on `/shortcuts`,
+  because they act on the Shortcut collection. "New shortcut" sits with the
+  filter and ordering controls above the collection itself. Nothing hides the
   header — a route that needs different chrome asks the header for it.
 - Every surface sits in the same `PageContainer`, so the mark stays aligned with
   the content beneath it and the gutters never change width between routes.
@@ -25,5 +26,10 @@ opening a Shortcut a dialog over the list it came from.
 - Analytics is a route (`/analytics`) rather than a mode of the dashboard, so it
   can be linked to and survives a refresh.
 - Creating opens a dialog built around the Name, since that is the decision being
-  made; editing still opens the drawer, which is the only place the full form
-  (description, OpenGraph metadata) lives.
+  made. Editing opens a dialog of the same shape, carrying the two fields
+  creating leaves out — the description and the OpenGraph metadata — because
+  both are written once the Shortcut exists. The fields themselves live in
+  `ShortcutFormFields` and are shared, so a Link or a Tag is typed the same way
+  in both. There is no longer a Shortcut drawer.
+- The edit dialog saves only what changed, so Save is dead until something is,
+  and it says plainly that renaming stops the old `s/name` resolving.

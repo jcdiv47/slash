@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import CreateShortcutDrawer from "@/components/CreateShortcutDrawer";
+import CreateShortcutDialog from "@/components/CreateShortcutDialog";
 import { Button } from "@/components/ui/button";
 import { isURL } from "@/helpers/utils";
 import useNavigateTo from "@/hooks/useNavigateTo";
@@ -18,7 +18,7 @@ const ShortcutSpace = () => {
   const shortcutStore = useShortcutStore();
   const [shortcut, setShortcut] = useState<Shortcut>();
   const [loading, setLoading] = useState(true);
-  const [showCreateShortcutDrawer, setShowCreateShortcutDrawer] = useState(false);
+  const [showCreateShortcutDialog, setShowCreateShortcutDialog] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -51,16 +51,16 @@ const ShortcutSpace = () => {
             Shortcut <span className="font-mono">{shortcutName}</span> Not Found.
           </p>
           <div className="mt-4">
-            <Button variant="ghost" size="sm" onClick={() => setShowCreateShortcutDrawer(true)}>
+            <Button variant="ghost" size="sm" onClick={() => setShowCreateShortcutDialog(true)}>
               👉 Click here to create it
             </Button>
           </div>
         </div>
-        {showCreateShortcutDrawer && (
-          <CreateShortcutDrawer
-            initialShortcut={{ name: shortcutName }}
-            onClose={() => setShowCreateShortcutDrawer(false)}
-            onConfirm={() => navigateTo("/")}
+        {showCreateShortcutDialog && (
+          <CreateShortcutDialog
+            initialName={shortcutName}
+            onClose={() => setShowCreateShortcutDialog(false)}
+            onCreated={() => navigateTo("/")}
           />
         )}
       </>

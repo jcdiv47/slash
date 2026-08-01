@@ -8,7 +8,6 @@ import { useUserStore, useViewStore } from "@/stores";
 import { Role } from "@/types/proto/api/v1/user_service";
 import AboutDialog from "./AboutDialog";
 import { openCommandPalette } from "./CommandPalette";
-import CreateShortcutDialog from "./CreateShortcutDialog";
 import DisplayStyleToggle from "./DisplayStyleToggle";
 import Icon from "./Icon";
 import Logo from "./Logo";
@@ -25,11 +24,10 @@ const Header: React.FC = () => {
   const viewStore = useViewStore();
   const { md } = useResponsiveWidth();
   const [showAboutDialog, setShowAboutDialog] = useState<boolean>(false);
-  const [showCreateDialog, setShowCreateDialog] = useState<boolean>(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const isAdmin = currentUser.role === Role.ADMIN;
-  // Searching, display style and creating all act on the Shortcut collection,
-  // so they only appear on the surface that shows it.
+  // Searching and display style both act on the Shortcut collection, so they
+  // only appear on the surface that shows it.
   const isDashboard = location.pathname === "/shortcuts";
   const isAnalytics = location.pathname === "/analytics";
   const shouldShowRouterSwitch = isDashboard || location.pathname === "/collections";
@@ -157,12 +155,6 @@ const Header: React.FC = () => {
                 ⌘K
               </Button>
             )}
-            {isDashboard && (
-              <Button size="sm" className="h-8 px-2.5" onClick={() => setShowCreateDialog(true)}>
-                <Icon.Plus className="w-4 h-auto" />
-                <span className="hidden md:inline">New shortcut</span>
-              </Button>
-            )}
             <Dropdown
               trigger={
                 <button className="flex flex-row justify-end items-center cursor-pointer">
@@ -197,8 +189,6 @@ const Header: React.FC = () => {
       </header>
 
       {showAboutDialog && <AboutDialog onClose={() => setShowAboutDialog(false)} />}
-
-      {showCreateDialog && <CreateShortcutDialog onClose={() => setShowCreateDialog(false)} />}
     </>
   );
 };
