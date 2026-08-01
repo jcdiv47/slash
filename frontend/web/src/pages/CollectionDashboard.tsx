@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import useLocalStorage from "react-use/lib/useLocalStorage";
 import CollectionView from "@/components/CollectionView";
 import CreateCollectionDrawer from "@/components/CreateCollectionDrawer";
-import FilterView from "@/components/FilterView";
 import Icon from "@/components/Icon";
+import PageContainer from "@/components/PageContainer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useLoading from "@/hooks/useLoading";
@@ -48,7 +48,7 @@ const CollectionDashboard: React.FC = () => {
 
   return (
     <>
-      <div className="mx-auto max-w-8xl w-full px-4 sm:px-6 md:px-12 pt-4 pb-6 flex flex-col justify-start items-start">
+      <PageContainer className="pt-6 pb-16 flex flex-col justify-start items-start">
         <div className="w-full flex flex-row justify-between items-center mb-4">
           <div>
             <Input
@@ -66,7 +66,6 @@ const CollectionDashboard: React.FC = () => {
             </Button>
           </div>
         </div>
-        <FilterView />
         {loadingState.isLoading ? (
           <div className="py-12 w-full flex flex-row justify-center items-center opacity-80 text-muted-foreground">
             <Icon.Loader className="mr-2 w-5 h-auto animate-spin" />
@@ -92,7 +91,7 @@ const CollectionDashboard: React.FC = () => {
             })}
           </div>
         )}
-      </div>
+      </PageContainer>
 
       {state.showCreateCollectionDrawer && (
         <CreateCollectionDrawer

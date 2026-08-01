@@ -1,6 +1,4 @@
-import useNavigateTo from "@/hooks/useNavigateTo";
 import useResponsiveWidth from "@/hooks/useResponsiveWidth";
-import { cn } from "@/lib/utils";
 import { useViewStore } from "@/stores";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 import ShortcutCard from "./ShortcutCard";
@@ -9,11 +7,10 @@ import ShortcutView from "./ShortcutView";
 
 interface Props {
   shortcutList: Shortcut[];
+  onShortcutClick: (shortcut: Shortcut) => void;
 }
 
-const ShortcutsContainer: React.FC<Props> = (props: Props) => {
-  const { shortcutList } = props;
-  const navigateTo = useNavigateTo();
+const ShortcutsContainer: React.FC<Props> = ({ shortcutList, onShortcutClick }: Props) => {
   const { sm } = useResponsiveWidth();
   const viewStore = useViewStore();
   const displayStyle = viewStore.displayStyle || "full";
@@ -22,32 +19,33 @@ const ShortcutsContainer: React.FC<Props> = (props: Props) => {
   // setting is untouched, so widening the window restores the list.
   const effectiveStyle = displayStyle === "list" && !sm ? "compact" : displayStyle;
 
-  const handleShortcutClick = (shortcut: Shortcut) => {
-    navigateTo(`/shortcut/${shortcut.id}`);
-  };
-
   if (effectiveStyle === "list") {
     return (
       <div className="w-full flex flex-col justify-start items-stretch divide-y divide-border border-y border-border">
         {shortcutList.map((shortcut) => (
-          <ShortcutRow key={shortcut.id} shortcut={shortcut} showActions={true} onClick={() => handleShortcutClick(shortcut)} />
+          <ShortcutRow key={shortcut.id} shortcut={shortcut} onClick={() => onShortcutClick(shortcut)} />
         ))}
       </div>
     );
   }
 
-  const ShortcutItemView = effectiveStyle === "compact" ? ShortcutView : ShortcutCard;
+  if (effectiveStyle === "compact") {
+    return (
+      <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        {shortcutList.map((shortcut) => (
+          <ShortcutView key={shortcut.id} shortcut={shortcut} showActions={true} onClick={() => onShortcutClick(shortcut)} />
+        ))}
+      </div>
+    );
+  }
 
+  // The card grid fills by minimum card width rather than by a fixed column
+  // count, so a card never stretches wide enough for its footer to fall apart.
   return (
-    <div
-      className={cn(
-        "w-full grid grid-cols-1 gap-3 sm:gap-4",
-        effectiveStyle === "full" ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-2 sm:grid-cols-4",
-      )}
-    >
-      {shortcutList.map((shortcut) => {
-        return <ShortcutItemView key={shortcut.id} shortcut={shortcut} showActions={true} onClick={() => handleShortcutClick(shortcut)} />;
-      })}
+    <div className="w-full grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(16.75rem,1fr))]">
+      {shortcutList.map((shortcut) => (
+        <ShortcutCard key={shortcut.id} shortcut={shortcut} onClick={() => onShortcutClick(shortcut)} />
+      ))}
     </div>
   );
 };

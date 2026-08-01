@@ -1,14 +1,20 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Visibility } from "@/types/proto/api/v1/common";
+import { matchesQuery } from "@/helpers/shortcut";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 import { User } from "@/types/proto/api/v1/user_service";
 
+// Whose Shortcuts the dashboard is showing. This is about authorship, not about
+// who may resolve them — that is Visibility, and the two are independent.
+export type Ownership = "all" | "mine";
+
 export interface Filter {
-  tab?: string;
-  tag?: string;
-  visibility?: Visibility;
   search?: string;
+  // Selected Tags narrow together: a Shortcut has to carry all of them. Any
+  // `tab`/`tag`/`visibility` left in a persisted filter from an earlier version
+  // is inert -- nothing reads those keys now.
+  tags?: string[];
+  ownership?: Ownership;
 }
 
 export interface Order {
@@ -26,6 +32,8 @@ interface ViewState {
   order: Order;
   displayStyle: DisplayStyle;
   setFilter: (filter: Partial<Filter>) => void;
+  getTags: () => string[];
+  toggleTag: (tag: string) => void;
   getOrder: () => Order;
   setOrder: (order: Partial<Order>) => void;
   setDisplayStyle: (displayStyle: DisplayStyle) => void;
@@ -42,6 +50,11 @@ const useViewStore = create<ViewState>()(
       displayStyle: "full",
       setFilter: (filter: Partial<Filter>) => {
         set({ filter: { ...get().filter, ...filter } });
+      },
+      getTags: () => get().filter.tags ?? [],
+      toggleTag: (tag: string) => {
+        const tags = get().filter.tags ?? [];
+        set({ filter: { ...get().filter, tags: tags.includes(tag) ? tags.filter((t) => t !== tag) : tags.concat(tag) } });
       },
       getOrder: () => {
         return {
@@ -63,39 +76,16 @@ const useViewStore = create<ViewState>()(
 );
 
 export const getFilteredShortcutList = (shortcutList: Shortcut[], filter: Filter, currentUser: User) => {
-  const { tab, tag, visibility, search } = filter;
-  const filteredShortcutList = shortcutList.filter((shortcut) => {
-    if (tag) {
-      if (!shortcut.tags.includes(tag)) {
-        return false;
-      }
+  const { search, tags, ownership } = filter;
+  return shortcutList.filter((shortcut) => {
+    if (ownership === "mine" && shortcut.creatorId !== currentUser.id) {
+      return false;
     }
-    if (visibility) {
-      if (shortcut.visibility !== visibility) {
-        return false;
-      }
+    if (tags?.length && !tags.every((tag) => shortcut.tags.includes(tag))) {
+      return false;
     }
-    if (search) {
-      if (
-        !shortcut.name.toLowerCase().includes(search.toLowerCase()) &&
-        !shortcut.description.toLowerCase().includes(search.toLowerCase()) &&
-        !shortcut.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase())) &&
-        !shortcut.link.toLowerCase().includes(search.toLowerCase())
-      ) {
-        return false;
-      }
-    }
-    if (tab) {
-      if (tab === "tab:mine") {
-        return shortcut.creatorId === currentUser.id;
-      } else if (tab.startsWith("tag:")) {
-        const tag = tab.split(":")[1];
-        return shortcut.tags.includes(tag);
-      }
-    }
-    return true;
+    return matchesQuery(shortcut, search ?? "");
   });
-  return filteredShortcutList;
 };
 
 export const getOrderedShortcutList = (shortcutList: Shortcut[], order: Order) => {

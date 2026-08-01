@@ -1,21 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useLocalStorage from "react-use/lib/useLocalStorage";
-import CreateShortcutDrawer from "@/components/CreateShortcutDrawer";
-import FilterView from "@/components/FilterView";
+import CreateShortcutDialog from "@/components/CreateShortcutDialog";
 import Icon from "@/components/Icon";
+import PageContainer from "@/components/PageContainer";
+import ShortcutDetailDialog from "@/components/ShortcutDetailDialog";
 import ShortcutsContainer from "@/components/ShortcutsContainer";
-import ShortcutsNavigator from "@/components/ShortcutsNavigator";
+import TagFilter from "@/components/TagFilter";
 import ViewSetting from "@/components/ViewSetting";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { countTags, matchesQuery } from "@/helpers/shortcut";
 import useLoading from "@/hooks/useLoading";
+import { cn } from "@/lib/utils";
 import { useShortcutStore, useUserStore, useViewStore } from "@/stores";
-import { getFilteredShortcutList, getOrderedShortcutList } from "@/stores/view";
+import { Ownership, getFilteredShortcutList, getOrderedShortcutList } from "@/stores/view";
+import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 
-interface State {
-  showCreateShortcutDrawer: boolean;
-}
+const ownershipOptions: { value: Ownership; labelKey: string }[] = [
+  { value: "all", labelKey: "filter.all" },
+  { value: "mine", labelKey: "filter.personal" },
+];
 
 const ShortcutDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -24,77 +28,108 @@ const ShortcutDashboard: React.FC = () => {
   const currentUser = useUserStore().getCurrentUser();
   const shortcutStore = useShortcutStore();
   const viewStore = useViewStore();
+  const [showCreateDialog, setShowCreateDialog] = useState<boolean>(false);
+  const [selectedShortcutId, setSelectedShortcutId] = useState<number | undefined>(undefined);
   const shortcutList = shortcutStore.getShortcutList();
-  const [state, setState] = useState<State>({
-    showCreateShortcutDrawer: false,
-  });
   const filter = viewStore.filter;
+  const selectedTags = viewStore.getTags();
+  const ownership = filter.ownership ?? "all";
   const filteredShortcutList = getFilteredShortcutList(shortcutList, filter, currentUser);
   const orderedShortcutList = getOrderedShortcutList(filteredShortcutList, viewStore.order);
+  const untitledCount = shortcutList.filter((shortcut) => !shortcut.title).length;
+  // Tag counts come from the search-filtered set rather than the fully filtered
+  // one, so selecting a Tag does not immediately rewrite the row it was picked
+  // from.
+  const tagOptions = useMemo(
+    () => countTags(shortcutList.filter((shortcut) => matchesQuery(shortcut, filter.search ?? ""))),
+    [shortcutList, filter.search],
+  );
+  // Resolved out of the store rather than held as an object, so deleting the
+  // Shortcut from the dialog closes it.
+  const selectedShortcut = shortcutList.find((shortcut) => shortcut.id === selectedShortcutId);
 
   useEffect(() => {
     setLastVisited("/shortcuts");
-    Promise.all([shortcutStore.fetchShortcutList()]).finally(() => {
-      loadingState.setFinish();
-    });
+    shortcutStore.fetchShortcutList().finally(() => loadingState.setFinish());
   }, []);
 
-  const setShowCreateShortcutDrawer = (show: boolean) => {
-    setState({
-      ...state,
-      showCreateShortcutDrawer: show,
-    });
-  };
+  const handleShortcutClick = (shortcut: Shortcut) => setSelectedShortcutId(shortcut.id);
 
   return (
     <>
-      <div className="mx-auto max-w-8xl w-full px-4 sm:px-6 md:px-12 pt-4 pb-6 flex flex-col justify-start items-start">
-        <ShortcutsNavigator />
-        <div className="w-full flex flex-row justify-between items-center mb-4 gap-2">
-          <div className="flex flex-row justify-start items-center">
-            <Input
-              className="w-32"
-              type="text"
-              placeholder={t("common.search")}
-              value={filter.search}
-              onChange={(e) => viewStore.setFilter({ search: e.target.value })}
-            />
+      <PageContainer className="pt-6 pb-16 flex flex-col justify-start items-start">
+        <div className="w-full mb-4 flex flex-row justify-between items-center gap-3">
+          <div className="min-w-0 flex flex-row items-baseline gap-2.5">
+            <h1 className="text-base font-semibold tracking-tight">Shortcuts</h1>
+            <span className="truncate text-sm text-muted-foreground">
+              {selectedTags.length > 0 || filter.search
+                ? `${orderedShortcutList.length} of ${shortcutList.length} shortcuts`
+                : `${shortcutList.length} shortcuts · ${untitledCount} untitled`}
+            </span>
           </div>
-          <div className="flex flex-row justify-end items-center gap-3">
+          <div className="shrink-0 flex flex-row justify-end items-center gap-2">
+            <div className="flex flex-row items-center gap-0.5 p-0.5 rounded-md border border-input">
+              {ownershipOptions.map(({ value, labelKey }) => (
+                <button
+                  key={value}
+                  className={cn(
+                    "h-6 px-2.5 rounded-sm text-sm transition-colors",
+                    value === ownership ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                  aria-pressed={value === ownership}
+                  onClick={() => viewStore.setFilter({ ownership: value })}
+                >
+                  {t(labelKey)}
+                </button>
+              ))}
+            </div>
             <ViewSetting />
-            <Button variant="default" size="sm" onClick={() => setShowCreateShortcutDrawer(true)}>
-              <Icon.Plus className="w-5 h-auto" />
-              <span className="ml-0.5">{t("common.create")}</span>
-            </Button>
           </div>
         </div>
-        <FilterView />
+
+        <TagFilter tags={tagOptions} />
+
         {loadingState.isLoading ? (
-          <div className="py-12 w-full flex flex-row justify-center items-center opacity-80 text-muted-foreground">
-            <Icon.Loader className="mr-2 w-5 h-auto animate-spin" />
-            {t("common.loading")}
+          // Card-shaped placeholders rather than a spinner, so the surface holds
+          // its shape while the list arrives.
+          <div className="w-full grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(16.75rem,1fr))]">
+            {Array.from({ length: 8 }, (_, i) => (
+              <div key={i} className="h-28 rounded-md border border-border bg-card opacity-60" />
+            ))}
           </div>
         ) : orderedShortcutList.length === 0 ? (
-          <div className="py-16 w-full flex flex-col justify-center items-center text-muted-foreground">
-            <Icon.PackageOpen size={64} strokeWidth={1} />
-            <p className="mt-2">No shortcuts found.</p>
-            <a
-              className="text-foreground border-t border-border text-sm hover:underline flex flex-row justify-center items-center mt-4 pt-2"
-              href="https://github.com/yourselfhosted/slash/blob/main/docs/getting-started/shortcuts.md"
-              target="_blank"
-            >
-              <span>Learn more about shortcuts.</span>
-              <Icon.ExternalLink className="ml-1 w-4 h-auto inline" />
-            </a>
+          <div className="w-full py-16 flex flex-col justify-center items-center text-center">
+            <p className="shortcut-name text-sm text-foreground">
+              {selectedTags.length > 0
+                ? "No shortcut carries every selected tag"
+                : filter.search
+                  ? `No shortcut matches “${filter.search}”`
+                  : "No shortcuts yet"}
+            </p>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              {selectedTags.length > 0 ? "Clear a tag to widen the search." : "Create one, or press ⌘K to jump to an existing shortcut."}
+            </p>
+            {selectedTags.length > 0 ? (
+              <Button variant="outline" size="sm" className="mt-4 h-8" onClick={() => viewStore.setFilter({ tags: [] })}>
+                Clear tags
+              </Button>
+            ) : (
+              !filter.search && (
+                <Button size="sm" className="mt-4 h-8" onClick={() => setShowCreateDialog(true)}>
+                  <Icon.Plus className="w-4 h-auto" />
+                  New shortcut
+                </Button>
+              )
+            )}
           </div>
         ) : (
-          <ShortcutsContainer shortcutList={orderedShortcutList} />
+          <ShortcutsContainer shortcutList={orderedShortcutList} onShortcutClick={handleShortcutClick} />
         )}
-      </div>
+      </PageContainer>
 
-      {state.showCreateShortcutDrawer && (
-        <CreateShortcutDrawer onClose={() => setShowCreateShortcutDrawer(false)} onConfirm={() => setShowCreateShortcutDrawer(false)} />
-      )}
+      {selectedShortcut && <ShortcutDetailDialog shortcut={selectedShortcut} onClose={() => setSelectedShortcutId(undefined)} />}
+
+      {showCreateDialog && <CreateShortcutDialog onClose={() => setShowCreateDialog(false)} />}
     </>
   );
 };
