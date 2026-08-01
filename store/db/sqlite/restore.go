@@ -158,7 +158,7 @@ func (r *restoreTx) InsertActivity(ctx context.Context, activity *store.Activity
 // Finalize is a no-op: SQLite's AUTOINCREMENT keeps sqlite_sequence at the
 // highest ID seen, including IDs supplied explicitly, so the next insert cannot
 // collide with a restored row.
-func (r *restoreTx) Finalize(_ context.Context) error {
+func (*restoreTx) Finalize(_ context.Context) error {
 	return nil
 }
 

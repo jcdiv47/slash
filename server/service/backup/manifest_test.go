@@ -71,7 +71,7 @@ func restoreTampered(ctx context.Context, t *testing.T, raw []byte) (*store.Stor
 	target := teststore.NewTestingStore(ctx, t)
 	installAdmin(ctx, t, target)
 
-	return target, backup.Restore(ctx, target, testProfile(), bytes.NewReader(raw))
+	return target, backup.Restore(ctx, target, bytes.NewReader(raw))
 }
 
 func TestRestoreRejectsManifestOmittingRequiredTable(t *testing.T) {
@@ -101,7 +101,7 @@ func TestRestoreAcceptsManifestOmittingActivity(t *testing.T) {
 	require.NoError(t, backup.Export(ctx, source, testProfile(), backup.ExportOptions{IncludeActivities: false}, &buf))
 
 	target := teststore.NewTestingStore(ctx, t)
-	require.NoError(t, backup.Restore(ctx, target, testProfile(), bytes.NewReader(buf.Bytes())))
+	require.NoError(t, backup.Restore(ctx, target, bytes.NewReader(buf.Bytes())))
 
 	activities, err := target.ListActivities(ctx, &store.FindActivity{})
 	require.NoError(t, err)

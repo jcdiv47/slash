@@ -107,7 +107,7 @@ func TestCrossDriverSQLiteToPostgres(t *testing.T) {
 	seed(ctx, t, source)
 	raw := exportAll(ctx, t, source)
 
-	require.NoError(t, backup.Restore(ctx, target, testProfile(), bytes.NewReader(raw)))
+	require.NoError(t, backup.Restore(ctx, target, bytes.NewReader(raw)))
 	assertRestoredFaithfully(ctx, t, source, target)
 }
 
@@ -119,6 +119,6 @@ func TestCrossDriverPostgresToSQLite(t *testing.T) {
 	seed(ctx, t, source)
 	raw := exportAll(ctx, t, source)
 
-	require.NoError(t, backup.Restore(ctx, target, testProfile(), bytes.NewReader(raw)))
+	require.NoError(t, backup.Restore(ctx, target, bytes.NewReader(raw)))
 	assertRestoredFaithfully(ctx, t, source, target)
 }

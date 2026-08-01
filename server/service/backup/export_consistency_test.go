@@ -154,7 +154,8 @@ func TestExportActivityMemoryIsBounded(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	runtime.GC()
+	// Establish a stable baseline before measuring live heap growth.
+	runtime.GC() //nolint:revive // Calling GC is the behavior this memory-bound test needs.
 	var before runtime.MemStats
 	runtime.ReadMemStats(&before)
 

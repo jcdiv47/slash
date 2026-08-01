@@ -101,7 +101,7 @@ func (s *APIV1Service) restoreBackup(c echo.Context) error {
 	}
 	defer file.Close()
 
-	if err := backup.Restore(ctx, s.Store, s.Profile, file); err != nil {
+	if err := backup.Restore(ctx, s.Store, file); err != nil {
 		return restoreError(err)
 	}
 

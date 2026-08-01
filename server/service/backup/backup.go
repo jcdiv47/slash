@@ -8,7 +8,6 @@ package backup
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -75,7 +74,7 @@ var ErrMalformedBackup = errors.New("this file is not a complete backup")
 // malformedBackup says why a file cannot be trusted as a Backup, in a sentence
 // an operator can act on, while staying matchable as ErrMalformedBackup.
 func malformedBackup(format string, args ...any) error {
-	return fmt.Errorf("%w: %s", ErrMalformedBackup, fmt.Sprintf(format, args...))
+	return errors.Wrapf(ErrMalformedBackup, format, args...)
 }
 
 // optionalTable is the one table a Manifest may leave out. Everything else is

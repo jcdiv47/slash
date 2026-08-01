@@ -12,7 +12,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	storepb "github.com/yourselfhosted/slash/proto/gen/store"
-	"github.com/yourselfhosted/slash/server/profile"
 	"github.com/yourselfhosted/slash/store"
 )
 
@@ -46,7 +45,7 @@ func (e *VersionMismatchError) Error() string {
 // exactly as it was. On success the caller must restart the instance: the
 // Workspace secret_session has been replaced and the server caches it at
 // startup.
-func Restore(ctx context.Context, s *store.Store, p *profile.Profile, r io.Reader) error {
+func Restore(ctx context.Context, s *store.Store, r io.Reader) error {
 	gzipReader, err := gzip.NewReader(r)
 	if err != nil {
 		return malformedBackup("it is not a valid gzip file: %v", err)

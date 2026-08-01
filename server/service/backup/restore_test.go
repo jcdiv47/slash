@@ -42,7 +42,7 @@ func TestRoundTripPreservesEverything(t *testing.T) {
 
 	// A different, empty instance — the only thing a restore accepts.
 	target := teststore.NewTestingStore(ctx, t)
-	require.NoError(t, backup.Restore(ctx, target, testProfile(), bytes.NewReader(raw)))
+	require.NoError(t, backup.Restore(ctx, target, bytes.NewReader(raw)))
 
 	users, err := target.ListUsers(ctx, &store.FindUser{})
 	require.NoError(t, err)
@@ -88,7 +88,7 @@ func TestRestoreLeavesIDsUsable(t *testing.T) {
 	raw := exportAll(ctx, t, source)
 
 	target := teststore.NewTestingStore(ctx, t)
-	require.NoError(t, backup.Restore(ctx, target, testProfile(), bytes.NewReader(raw)))
+	require.NoError(t, backup.Restore(ctx, target, bytes.NewReader(raw)))
 
 	users, err := target.ListUsers(ctx, &store.FindUser{})
 	require.NoError(t, err)
@@ -117,7 +117,7 @@ func TestRestoreRefusesNonEmptyInstance(t *testing.T) {
 	target := teststore.NewTestingStore(ctx, t)
 	seed(ctx, t, target)
 
-	err := backup.Restore(ctx, target, testProfile(), bytes.NewReader(raw))
+	err := backup.Restore(ctx, target, bytes.NewReader(raw))
 	require.ErrorIs(t, err, backup.ErrNotEmpty)
 
 	// And nothing was touched.
@@ -140,7 +140,7 @@ func TestRestoreAllowsSingleAdminInstance(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, backup.Restore(ctx, target, testProfile(), bytes.NewReader(raw)))
+	require.NoError(t, backup.Restore(ctx, target, bytes.NewReader(raw)))
 
 	users, err := target.ListUsers(ctx, &store.FindUser{})
 	require.NoError(t, err)
@@ -157,7 +157,7 @@ func TestRestoreRejectsVersionMismatch(t *testing.T) {
 	tampered := bytes.ReplaceAll(gunzipForTest(t, raw), []byte(`"schemaVersion":"`), []byte(`"schemaVersion":"0.9.`))
 	target := teststore.NewTestingStore(ctx, t)
 
-	err := backup.Restore(ctx, target, testProfile(), bytes.NewReader(gzipForTest(t, tampered)))
+	err := backup.Restore(ctx, target, bytes.NewReader(gzipForTest(t, tampered)))
 	var mismatch *backup.VersionMismatchError
 	require.ErrorAs(t, err, &mismatch)
 	require.Contains(t, err.Error(), "Restore it with that version of Slash first")
@@ -167,7 +167,7 @@ func TestRestoreRejectsGarbage(t *testing.T) {
 	ctx := context.Background()
 	target := teststore.NewTestingStore(ctx, t)
 
-	err := backup.Restore(ctx, target, testProfile(), bytes.NewReader([]byte("this is not a gzip file")))
+	err := backup.Restore(ctx, target, bytes.NewReader([]byte("this is not a gzip file")))
 	require.ErrorContains(t, err, "not a valid gzip file")
 }
 
@@ -188,7 +188,7 @@ func TestRestoreIsAtomic(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = backup.Restore(ctx, target, testProfile(), bytes.NewReader(gzipForTest(t, broken)))
+	err = backup.Restore(ctx, target, bytes.NewReader(gzipForTest(t, broken)))
 	require.ErrorContains(t, err, "bogus")
 
 	// The DeleteAll that ran first must have been rolled back with everything else.
