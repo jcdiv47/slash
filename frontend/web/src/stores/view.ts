@@ -22,21 +22,35 @@ export interface Order {
   direction: "asc" | "desc";
 }
 
-// `full` and `compact` are both grids, of large cards and small tiles
-// respectively; `list` is the only row-based style. Values are persisted, so
-// this union may be extended but existing members must not be renamed.
-export type DisplayStyle = "full" | "compact" | "list";
+// Two shapes, and they answer different questions: `full` is the card grid —
+// "what is in here" — and `list` is the grouped index — "what is in this
+// destination / tag / week". The small-tile grid that used to sit between them
+// answered neither, so it is gone; Density now covers wanting more per screen.
+// Values are persisted, so this union may be extended but existing members must
+// not be renamed.
+export type DisplayStyle = "full" | "list";
+
+// How tightly the card grid packs. This is a property of the grid, not of the
+// Shortcut, so it is deliberately independent of Display Style.
+export type Density = "comfortable" | "compact" | "dense";
+
+// What the grouped index groups by.
+export type GroupBy = "site" | "tag" | "recency";
 
 interface ViewState {
   filter: Filter;
   order: Order;
   displayStyle: DisplayStyle;
+  density: Density;
+  groupBy: GroupBy;
   setFilter: (filter: Partial<Filter>) => void;
   getTags: () => string[];
   toggleTag: (tag: string) => void;
   getOrder: () => Order;
   setOrder: (order: Partial<Order>) => void;
   setDisplayStyle: (displayStyle: DisplayStyle) => void;
+  setDensity: (density: Density) => void;
+  setGroupBy: (groupBy: GroupBy) => void;
 }
 
 const useViewStore = create<ViewState>()(
@@ -48,6 +62,8 @@ const useViewStore = create<ViewState>()(
         direction: "asc",
       },
       displayStyle: "full",
+      density: "comfortable",
+      groupBy: "site",
       setFilter: (filter: Partial<Filter>) => {
         set({ filter: { ...get().filter, ...filter } });
       },
@@ -68,9 +84,28 @@ const useViewStore = create<ViewState>()(
       setDisplayStyle: (displayStyle: DisplayStyle) => {
         set({ displayStyle });
       },
+      setDensity: (density: Density) => {
+        set({ density });
+      },
+      setGroupBy: (groupBy: GroupBy) => {
+        set({ groupBy });
+      },
     }),
     {
       name: "view",
+      version: 2,
+      // A Member who left the workspace on the retired tile grid comes back to
+      // the card grid at the density that reads closest to it, rather than to a
+      // Display Style nothing renders.
+      migrate: (persisted: any, version: number) => {
+        if (!persisted) {
+          return persisted;
+        }
+        if (version < 2 && persisted.displayStyle === "compact") {
+          return { ...persisted, displayStyle: "full", density: persisted.density ?? "dense" };
+        }
+        return persisted;
+      },
     },
   ),
 );

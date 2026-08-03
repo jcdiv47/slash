@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useLocalStorage from "react-use/lib/useLocalStorage";
 import CreateShortcutDialog from "@/components/CreateShortcutDialog";
+import DensityToggle from "@/components/DensityToggle";
+import GroupByToggle from "@/components/GroupByToggle";
 import Icon from "@/components/Icon";
 import PageContainer from "@/components/PageContainer";
 import ShortcutDetailDialog from "@/components/ShortcutDetailDialog";
@@ -9,17 +11,25 @@ import ShortcutsContainer from "@/components/ShortcutsContainer";
 import TagFilter from "@/components/TagFilter";
 import ViewSetting from "@/components/ViewSetting";
 import { Button } from "@/components/ui/button";
-import { countTags, matchesQuery } from "@/helpers/shortcut";
+import { countTags, groupShortcuts, matchesQuery } from "@/helpers/shortcut";
 import useLoading from "@/hooks/useLoading";
 import { cn } from "@/lib/utils";
 import { useShortcutStore, useUserStore, useViewStore } from "@/stores";
-import { Ownership, getFilteredShortcutList, getOrderedShortcutList } from "@/stores/view";
+import { GroupBy, Ownership, getFilteredShortcutList, getOrderedShortcutList } from "@/stores/view";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 
 const ownershipOptions: { value: Ownership; labelKey: string }[] = [
   { value: "all", labelKey: "filter.all" },
   { value: "mine", labelKey: "filter.personal" },
 ];
+
+// What a group stands for, so the count line says what was counted rather than
+// repeating "groups".
+const groupNouns: Record<GroupBy, string> = {
+  site: "destinations",
+  tag: "tags",
+  recency: "periods",
+};
 
 const ShortcutDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -34,9 +44,18 @@ const ShortcutDashboard: React.FC = () => {
   const filter = viewStore.filter;
   const selectedTags = viewStore.getTags();
   const ownership = filter.ownership ?? "all";
+  const displayStyle = viewStore.displayStyle || "full";
+  const groupBy = viewStore.groupBy || "site";
+  const isIndex = displayStyle === "list";
   const filteredShortcutList = getFilteredShortcutList(shortcutList, filter, currentUser);
   const orderedShortcutList = getOrderedShortcutList(filteredShortcutList, viewStore.order);
   const untitledCount = shortcutList.filter((shortcut) => !shortcut.title).length;
+  const isNarrowed = selectedTags.length > 0 || Boolean(filter.search) || ownership === "mine";
+  // Only counted for the index's own count line — the grid never asks.
+  const groupCount = useMemo(
+    () => (isIndex ? groupShortcuts(orderedShortcutList, groupBy).length : 0),
+    [isIndex, orderedShortcutList, groupBy],
+  );
   // Tag counts come from the search-filtered set rather than the fully filtered
   // one, so selecting a Tag does not immediately rewrite the row it was picked
   // from.
@@ -55,17 +74,19 @@ const ShortcutDashboard: React.FC = () => {
 
   const handleShortcutClick = (shortcut: Shortcut) => setSelectedShortcutId(shortcut.id);
 
+  const countLabel = isIndex
+    ? `${groupCount} ${groupNouns[groupBy]} · ${orderedShortcutList.length}${isNarrowed ? ` of ${shortcutList.length}` : ""} shortcuts`
+    : isNarrowed
+      ? `${orderedShortcutList.length} of ${shortcutList.length} shortcuts`
+      : `${shortcutList.length} shortcuts · ${untitledCount} untitled`;
+
   return (
     <>
       <PageContainer className="pt-6 pb-16 flex flex-col justify-start items-start">
         <div className="w-full mb-4 flex flex-row justify-between items-center gap-3">
           <div className="min-w-0 flex flex-row items-baseline gap-2.5">
             <h1 className="text-base font-semibold tracking-tight">Shortcuts</h1>
-            <span className="truncate text-sm text-muted-foreground">
-              {selectedTags.length > 0 || filter.search
-                ? `${orderedShortcutList.length} of ${shortcutList.length} shortcuts`
-                : `${shortcutList.length} shortcuts · ${untitledCount} untitled`}
-            </span>
+            <span className="truncate text-sm text-muted-foreground">{countLabel}</span>
           </div>
           <div className="shrink-0 flex flex-row justify-end items-center gap-2">
             <div className="flex flex-row items-center gap-0.5 p-0.5 rounded-md border border-input">
@@ -83,6 +104,9 @@ const ShortcutDashboard: React.FC = () => {
                 </button>
               ))}
             </div>
+            {/* Each shape gets only the controls that shape it: the grid is
+                packed and ordered, the index is grouped. */}
+            {isIndex ? <GroupByToggle /> : <DensityToggle />}
             <ViewSetting />
             {/* Creating acts on the collection below, so it sits at the end of
                 the row that shapes it rather than up in the header. */}
@@ -98,7 +122,7 @@ const ShortcutDashboard: React.FC = () => {
         {loadingState.isLoading ? (
           // Card-shaped placeholders rather than a spinner, so the surface holds
           // its shape while the list arrives.
-          <div className="w-full grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(16.75rem,1fr))]">
+          <div className="w-full grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(17rem,1fr))]">
             {Array.from({ length: 8 }, (_, i) => (
               <div key={i} className="h-28 rounded-md border border-border bg-card opacity-60" />
             ))}

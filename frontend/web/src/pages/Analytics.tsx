@@ -4,21 +4,21 @@ import Icon from "@/components/Icon";
 import LinkFavicon from "@/components/LinkFavicon";
 import PageContainer from "@/components/PageContainer";
 import ShortcutDetailDialog from "@/components/ShortcutDetailDialog";
+import SiteExplorer from "@/components/SiteExplorer";
 import { Button } from "@/components/ui/button";
 import { formatCount, groupBySite, splitLink } from "@/helpers/shortcut";
 import useLoading from "@/hooks/useLoading";
 import { cn } from "@/lib/utils";
 import { useShortcutStore } from "@/stores";
 import { Visibility } from "@/types/proto/api/v1/common";
+import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 
 const PAGE_SIZE = 12;
 
-// Both tables keep their columns aligned the same way Rows do: fixed or `fr`
-// tracks only, in one literal string Tailwind can see.
+// The ranking keeps its columns aligned the way Rows do: fixed or `fr` tracks
+// only, in one literal string Tailwind can see.
 const SHORTCUT_COLUMNS =
   "grid grid-cols-[minmax(0,1fr)_minmax(0,8rem)_4rem] md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)_minmax(0,9rem)_4.5rem_5.25rem_1.25rem] items-center gap-3";
-const SITE_COLUMNS =
-  "grid grid-cols-[minmax(0,1fr)_3.25rem_4rem] md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)_4.5rem_5.25rem_1.25rem] items-center gap-3";
 
 const ColumnHeader = ({ className, children }: { className?: string; children: React.ReactNode }) => (
   <span className={cn("font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground", className)}>{children}</span>
@@ -28,7 +28,11 @@ const Analytics = () => {
   const { t } = useTranslation();
   const loadingState = useLoading();
   const shortcutStore = useShortcutStore();
+  // Two different jobs, so two pieces of state: `site` narrows the ranking,
+  // `exploredSite` is what the explorer has open. Clearing the filter must not
+  // empty the pane beside it.
   const [site, setSite] = useState<string>("");
+  const [exploredSite, setExploredSite] = useState<string>("");
   const [page, setPage] = useState<number>(0);
   const [selectedShortcutId, setSelectedShortcutId] = useState<number | undefined>(undefined);
   const shortcutList = shortcutStore.getShortcutList();
@@ -60,12 +64,27 @@ const Analytics = () => {
     { label: "Untagged", value: String(untaggedCount), note: "needs cleanup" },
   ];
 
+  // Selecting a site both opens it in the explorer and narrows the ranking, so
+  // one click answers "what is on this domain" and "how does it rank". Picking
+  // the site that is already narrowing the ranking widens it again, and leaves
+  // the pane where it was.
+  const handleSelectSite = (fqdn: string) => {
+    setExploredSite(fqdn);
+    setSite(site === fqdn ? "" : fqdn);
+    setPage(0);
+  };
+
+  const handleClearSite = () => {
+    setSite("");
+    setPage(0);
+  };
+
   if (loadingState.isLoading) {
     return null;
   }
 
-  // Nothing to rank and nothing to roll up: the whole surface is empty, not one
-  // of its tables.
+  // Nothing to rank and nothing to explore: the whole surface is empty, not one
+  // of its sections.
   if (shortcutList.length === 0) {
     return (
       <PageContainer className="pt-6 pb-16">
@@ -104,10 +123,7 @@ const Analytics = () => {
             {site && (
               <button
                 className="shortcut-name ml-auto inline-flex items-center gap-1.5 px-2 py-1 rounded-sm bg-primary text-xs text-primary-foreground"
-                onClick={() => {
-                  setSite("");
-                  setPage(0);
-                }}
+                onClick={handleClearSite}
               >
                 {site}
                 <Icon.X className="w-3 h-auto" strokeWidth={2.5} />
@@ -127,7 +143,7 @@ const Analytics = () => {
           </div>
 
           <div className="w-full flex flex-col justify-start items-stretch divide-y divide-border border-t border-border">
-            {pageRows.map((shortcut) => {
+            {pageRows.map((shortcut: Shortcut) => {
               const { host, path } = splitLink(shortcut.link);
               return (
                 <div
@@ -176,15 +192,7 @@ const Analytics = () => {
             {rows.length === 0 && (
               <div className="w-full py-12 flex flex-col justify-center items-center text-center">
                 <p className="text-sm text-muted-foreground">No shortcuts to rank.</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3 h-8"
-                  onClick={() => {
-                    setSite("");
-                    setPage(0);
-                  }}
-                >
+                <Button variant="outline" size="sm" className="mt-3 h-8" onClick={handleClearSite}>
                   Reset filters
                 </Button>
               </div>
@@ -246,63 +254,16 @@ const Analytics = () => {
 
         <section className="w-full mt-12 pt-6 border-t border-border">
           <div className="w-full mb-4 flex flex-row items-baseline flex-wrap gap-2.5">
-            <h2 className="text-base font-semibold tracking-tight">All sites</h2>
+            <h2 className="text-base font-semibold tracking-tight">Where the links go</h2>
             <span className="text-sm text-muted-foreground">{sites.length} sites · grouped by fully qualified domain</span>
           </div>
 
-          <div className={cn(SITE_COLUMNS, "px-2.5 pb-2")}>
-            <ColumnHeader>Domain</ColumnHeader>
-            <ColumnHeader className="hidden md:block">Shortcuts</ColumnHeader>
-            <ColumnHeader className="text-right">Count</ColumnHeader>
-            <ColumnHeader className="text-right">{t("filter.order-by-visits")}</ColumnHeader>
-            <span className="hidden md:block" />
-          </div>
-
-          <div className="w-full flex flex-col justify-start items-stretch divide-y divide-border border-t border-border">
-            {sites.map((entry) => (
-              <div
-                key={entry.fqdn}
-                className={cn(SITE_COLUMNS, "px-2.5 py-2.5 cursor-pointer transition-colors hover:bg-accent/40")}
-                onClick={() => {
-                  setSite(site === entry.fqdn ? "" : entry.fqdn);
-                  setPage(0);
-                }}
-              >
-                <div className="min-w-0 flex flex-row items-center gap-2.5">
-                  <div className="w-[18px] h-[18px] flex justify-center items-center overflow-clip shrink-0">
-                    <LinkFavicon url={entry.shortcuts[0]?.link ?? ""} />
-                  </div>
-                  <span className="shortcut-name min-w-0 truncate text-sm text-foreground">{entry.fqdn}</span>
-                  {entry.isLocal && (
-                    <span className="font-mono shrink-0 px-1.5 rounded-sm border border-border text-xs uppercase tracking-[0.06em] text-muted-foreground">
-                      LAN
-                    </span>
-                  )}
-                  {site === entry.fqdn && <Icon.Check className="w-3.5 h-auto shrink-0 text-foreground" strokeWidth={2.5} />}
-                </div>
-                <div className="hidden md:flex flex-row items-center gap-1.5 overflow-hidden">
-                  {entry.shortcuts.map((shortcut) => (
-                    <button
-                      key={shortcut.id}
-                      className="shortcut-name shrink-0 px-1.5 py-0.5 rounded-sm bg-muted text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedShortcutId(shortcut.id);
-                      }}
-                    >
-                      s/{shortcut.name}
-                    </button>
-                  ))}
-                  {entry.more > 0 && <span className="shortcut-name shrink-0 text-xs text-muted-foreground">+{entry.more}</span>}
-                </div>
-                <div className="shortcut-name text-right text-sm text-foreground">{entry.count}</div>
-                <div className="shortcut-name text-right text-sm text-muted-foreground">{formatCount(entry.visits)}</div>
-                <div className="hidden md:flex flex-row justify-end items-center text-muted-foreground/60">
-                  <Icon.ChevronRight className="w-4 h-auto" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <SiteExplorer
+            sites={sites}
+            selected={exploredSite}
+            onSelect={handleSelectSite}
+            onShortcutClick={(shortcut) => setSelectedShortcutId(shortcut.id)}
+          />
         </section>
       </PageContainer>
 

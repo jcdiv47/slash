@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Visibility } from "@/types/proto/api/v1/common";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
-import { checkName, countTags, formatCount, groupBySite, matchesQuery, normalizeName, splitLink } from "./shortcut";
+import { checkName, countTags, formatCount, groupBySite, groupShortcuts, matchesQuery, normalizeName, splitLink } from "./shortcut";
 
 const shortcut = (partial: Partial<Shortcut>) => Shortcut.fromPartial({ visibility: Visibility.WORKSPACE, ...partial });
 
@@ -158,11 +158,54 @@ describe("groupBySite", () => {
     expect(sites.find((site) => site.fqdn === "grafana.example.com")?.isLocal).toBe(false);
   });
 
-  it("previews the first three Shortcuts and counts the rest", () => {
-    const many = Array.from({ length: 5 }, (_, i) => shortcut({ name: `n${i}`, link: `https://example.com/${i}` }));
+  it("keeps every Shortcut on the site, most visited first", () => {
+    const many = [
+      shortcut({ name: "quiet", link: "https://example.com/1", viewCount: 1 }),
+      shortcut({ name: "busy", link: "https://example.com/2", viewCount: 90 }),
+      shortcut({ name: "middling", link: "https://example.com/3", viewCount: 12 }),
+    ];
     const [site] = groupBySite(many);
-    expect(site.shortcuts.map((s) => s.name)).toEqual(["n0", "n1", "n2"]);
-    expect(site.more).toBe(2);
+    expect(site.shortcuts.map((s) => s.name)).toEqual(["busy", "middling", "quiet"]);
+  });
+});
+
+describe("groupShortcuts", () => {
+  const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const shortcuts = [
+    shortcut({ id: 1, name: "grafana", link: "https://grafana.example.com/d/a", viewCount: 10, tags: ["infra"], updatedTime: daysAgo(1) }),
+    shortcut({
+      id: 2,
+      name: "grafana-slo",
+      link: "https://grafana.example.com/d/b",
+      viewCount: 30,
+      tags: ["infra", "oncall"],
+      updatedTime: daysAgo(20),
+    }),
+    shortcut({ id: 3, name: "nas", link: "http://nas.home.arpa:5000", viewCount: 40, tags: [], updatedTime: daysAgo(200) }),
+  ];
+
+  it("files Shortcuts under their site and marks a local one", () => {
+    const groups = groupShortcuts(shortcuts, "site");
+    expect(groups.map((group) => group.label)).toEqual(["grafana.example.com", "nas.home.arpa"]);
+    expect(groups[0]).toMatchObject({ count: 2, visits: 40 });
+    expect(groups[1].isLocal).toBe(true);
+  });
+
+  it("files a Shortcut under every Tag it carries, and puts Untagged last", () => {
+    const groups = groupShortcuts(shortcuts, "tag");
+    expect(groups.map((group) => group.label)).toEqual(["#infra", "#oncall", "Untagged"]);
+    expect(groups[0].count).toBe(2);
+  });
+
+  it("buckets by when a Shortcut last changed, newest bucket first", () => {
+    const groups = groupShortcuts(shortcuts, "recency");
+    expect(groups.map((group) => group.label)).toEqual(["Last 7 days", "Last 30 days", "Older"]);
+    expect(groups.map((group) => group.count)).toEqual([1, 1, 1]);
+  });
+
+  it("emits no empty group", () => {
+    expect(groupShortcuts([], "site")).toEqual([]);
+    expect(groupShortcuts([shortcut({ name: "a", link: "https://example.com" })], "tag").map((group) => group.label)).toEqual(["Untagged"]);
   });
 });
 

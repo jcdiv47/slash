@@ -29,9 +29,16 @@ const Header: React.FC = () => {
   // Searching and display style both act on the Shortcut collection, so they
   // only appear on the surface that shows it.
   const isDashboard = location.pathname === "/shortcuts";
-  const isAnalytics = location.pathname === "/analytics";
-  const shouldShowRouterSwitch = isDashboard || location.pathname === "/collections";
-  const selectedSection = isDashboard ? "Shortcuts" : location.pathname === "/collections" ? "Collections" : "";
+  // The three surfaces that show the same Workspace from different angles. They
+  // are peers, so they are switched between in one place — the mark's own
+  // breadcrumb — rather than reached by a button that only exists on the surface
+  // it leads away from.
+  const sections: { path: string; label: string; icon: Icon.LucideIcon }[] = [
+    { path: "/shortcuts", label: "Shortcuts", icon: Icon.SquareSlash },
+    { path: "/collections", label: "Collections", icon: Icon.LibrarySquare },
+    { path: "/analytics", label: t("analytics.self"), icon: Icon.LayoutDashboard },
+  ];
+  const currentSection = sections.find((section) => section.path === location.pathname);
 
   // `/` focuses search from anywhere on the page — but not while a Member is
   // typing a `/` into a field of their own.
@@ -97,25 +104,24 @@ const Header: React.FC = () => {
               <Logo className="!w-5 mr-2" />
               <span className="font-medium tracking-tight">Slash</span>
             </Link>
-            {shouldShowRouterSwitch && (
+            {currentSection && (
               <>
                 <span className="font-mono text-muted-foreground mx-1">/</span>
                 <Dropdown
                   trigger={
                     <button className="flex flex-row justify-end items-center cursor-pointer">
-                      <span className="text-foreground text-sm">{selectedSection}</span>
+                      <span className="text-foreground text-sm">{currentSection.label}</span>
                       <Icon.ChevronsUpDown className="ml-1 w-4 h-auto text-muted-foreground" />
                     </button>
                   }
                   actionsClassName="!w-36 -left-4"
                   actions={
                     <>
-                      <Link className={menuItemClassName} to="/shortcuts" viewTransition>
-                        <Icon.SquareSlash className="w-5 h-auto mr-2 opacity-70" /> Shortcuts
-                      </Link>
-                      <Link className={menuItemClassName} to="/collections" viewTransition>
-                        <Icon.LibrarySquare className="w-5 h-auto mr-2 opacity-70" /> Collections
-                      </Link>
+                      {sections.map(({ path, label, icon: SectionIcon }) => (
+                        <Link key={path} className={menuItemClassName} to={path} viewTransition>
+                          <SectionIcon className="w-5 h-auto mr-2 opacity-70" /> {label}
+                        </Link>
+                      ))}
                     </>
                   }
                 ></Dropdown>
@@ -127,22 +133,6 @@ const Header: React.FC = () => {
 
           <div className="ml-auto flex flex-row justify-end items-center gap-2 shrink-0">
             {isDashboard && md && <DisplayStyleToggle />}
-            {isDashboard && (
-              <Button variant="outline" size="sm" className="h-8 px-2.5" asChild>
-                <Link to="/analytics" viewTransition>
-                  <Icon.LayoutDashboard className="w-4 h-auto" />
-                  <span className="hidden md:inline">{t("analytics.self")}</span>
-                </Link>
-              </Button>
-            )}
-            {isAnalytics && (
-              <Button variant="outline" size="sm" className="h-8 px-2.5" asChild>
-                <Link to="/shortcuts" viewTransition>
-                  <Icon.ChevronLeft className="w-4 h-auto" />
-                  <span className="hidden md:inline">Shortcuts</span>
-                </Link>
-              </Button>
-            )}
             {/* ⌘K means nothing without a keyboard, so it is not offered on a phone. */}
             {md && (
               <Button

@@ -1,52 +1,70 @@
-import useResponsiveWidth from "@/hooks/useResponsiveWidth";
+import { useState } from "react";
 import { useViewStore } from "@/stores";
+import { Density } from "@/stores/view";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 import ShortcutCard from "./ShortcutCard";
-import ShortcutRow from "./ShortcutRow";
-import ShortcutView from "./ShortcutView";
+import ShortcutContextMenu from "./ShortcutContextMenu";
+import ShortcutGroupedIndex from "./ShortcutGroupedIndex";
 
 interface Props {
   shortcutList: Shortcut[];
   onShortcutClick: (shortcut: Shortcut) => void;
 }
 
+// The grid fills by minimum card width rather than by a fixed column count, so
+// a card never stretches wide enough for its footer to fall apart. Density only
+// changes that minimum and the gap — one literal string per step, since Tailwind
+// cannot see a computed class. A phone gets one comfortable column at every
+// density; there is no second column to win by tightening.
+const gridClasses: Record<Density, string> = {
+  comfortable: "gap-3.5 grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(17rem,1fr))]",
+  compact: "gap-3.5 sm:gap-2.5 grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(14.5rem,1fr))]",
+  dense: "gap-3.5 sm:gap-2 grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))]",
+};
+
+interface MenuState {
+  shortcut: Shortcut;
+  x: number;
+  y: number;
+}
+
 const ShortcutsContainer: React.FC<Props> = ({ shortcutList, onShortcutClick }: Props) => {
-  const { sm } = useResponsiveWidth();
   const viewStore = useViewStore();
   const displayStyle = viewStore.displayStyle || "full";
-  // Aligned columns need horizontal room they don't have on a phone, so below
-  // the `sm` breakpoint the list borrows the compact tile grid. The persisted
-  // setting is untouched, so widening the window restores the list.
-  const effectiveStyle = displayStyle === "list" && !sm ? "compact" : displayStyle;
+  const density = viewStore.density || "comfortable";
+  const [menu, setMenu] = useState<MenuState | null>(null);
 
-  if (effectiveStyle === "list") {
-    return (
-      <div className="w-full flex flex-col justify-start items-stretch divide-y divide-border border-y border-border">
-        {shortcutList.map((shortcut) => (
-          <ShortcutRow key={shortcut.id} shortcut={shortcut} onClick={() => onShortcutClick(shortcut)} />
-        ))}
-      </div>
-    );
+  if (displayStyle === "list") {
+    return <ShortcutGroupedIndex shortcutList={shortcutList} onShortcutClick={onShortcutClick} />;
   }
 
-  if (effectiveStyle === "compact") {
-    return (
-      <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        {shortcutList.map((shortcut) => (
-          <ShortcutView key={shortcut.id} shortcut={shortcut} showActions={true} onClick={() => onShortcutClick(shortcut)} />
-        ))}
-      </div>
-    );
-  }
+  // The usage bar on a card is a share of the busiest Shortcut currently shown,
+  // so filtering rescales it rather than flattening every bar to nothing.
+  const maxVisits = shortcutList.reduce((max, shortcut) => Math.max(max, shortcut.viewCount), 0);
 
-  // The card grid fills by minimum card width rather than by a fixed column
-  // count, so a card never stretches wide enough for its footer to fall apart.
+  const handleContextMenu = (shortcut: Shortcut) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenu({ shortcut, x: e.clientX, y: e.clientY });
+  };
+
   return (
-    <div className="w-full grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(16.75rem,1fr))]">
-      {shortcutList.map((shortcut) => (
-        <ShortcutCard key={shortcut.id} shortcut={shortcut} onClick={() => onShortcutClick(shortcut)} />
-      ))}
-    </div>
+    <>
+      <div className={`w-full grid ${gridClasses[density]}`}>
+        {shortcutList.map((shortcut) => (
+          <ShortcutCard
+            key={shortcut.id}
+            shortcut={shortcut}
+            density={density}
+            maxVisits={maxVisits}
+            onClick={() => onShortcutClick(shortcut)}
+            onContextMenu={handleContextMenu(shortcut)}
+          />
+        ))}
+      </div>
+
+      {menu && <ShortcutContextMenu shortcut={menu.shortcut} x={menu.x} y={menu.y} onClose={() => setMenu(null)} />}
+    </>
   );
 };
 
