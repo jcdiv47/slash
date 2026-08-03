@@ -94,7 +94,7 @@ const ShortcutDashboard: React.FC = () => {
                 <button
                   key={value}
                   className={cn(
-                    "h-6 px-2.5 rounded-sm text-sm transition-colors",
+                    "h-7 px-2.5 rounded-sm text-sm transition-colors",
                     value === ownership ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
                   )}
                   aria-pressed={value === ownership}
