@@ -91,7 +91,13 @@ const ShortcutDetailDialog = ({ shortcut, onClose }: Props) => {
   return (
     <>
       <Dialog open onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-3xl gap-0 p-0 overflow-hidden [&>button]:hidden" aria-describedby={undefined}>
+        {/* While editing, this dialog stays mounted (unmounting it bounces
+            focus through the page underneath) but fades out, in step with the
+            edit dialog fading in. */}
+        <DialogContent
+          className={cn("top-[46%] max-w-3xl gap-0 p-0 overflow-hidden [&>button]:hidden", showEditDialog && "opacity-0")}
+          aria-describedby={undefined}
+        >
           <div className="px-4 sm:px-6 pt-5 pb-4 border-b border-border">
             <div className="flex flex-row justify-start items-start gap-3">
               <div className="w-9 h-9 shrink-0 flex justify-center items-center rounded-md border border-border bg-muted/50">
@@ -289,9 +295,8 @@ const ShortcutDetailDialog = ({ shortcut, onClose }: Props) => {
         </DialogContent>
       </Dialog>
 
-      {showQRCodeDialog && <GenerateQRCodeDialog shortcut={shortcut} onClose={() => setShowQRCodeDialog(false)} />}
-
       {showEditDialog && <EditShortcutDialog shortcut={shortcut} onClose={() => setShowEditDialog(false)} />}
+      {showQRCodeDialog && <GenerateQRCodeDialog shortcut={shortcut} onClose={() => setShowQRCodeDialog(false)} />}
     </>
   );
 };
