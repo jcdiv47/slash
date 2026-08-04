@@ -15,7 +15,7 @@ export default defineConfig({
         target: devProxyServer,
         xfwd: true,
       },
-      "^/slash.api.v2": {
+      "^/slash.api.v1": {
         target: devProxyServer,
         xfwd: true,
       },

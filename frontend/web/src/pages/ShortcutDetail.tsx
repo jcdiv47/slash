@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { showCommonDialog } from "@/components/Alert";
 import AnalyticsView from "@/components/AnalyticsView";
-import CreateShortcutDrawer from "@/components/CreateShortcutDrawer";
+import EditShortcutDialog from "@/components/EditShortcutDialog";
 import GenerateQRCodeDialog from "@/components/GenerateQRCodeDialog";
 import Icon from "@/components/Icon";
 import LinkFavicon from "@/components/LinkFavicon";
@@ -20,10 +20,6 @@ import { useUserStore, useShortcutStore } from "@/stores";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
 import { Role } from "@/types/proto/api/v1/user_service";
 
-interface State {
-  showEditDrawer: boolean;
-}
-
 const ShortcutDetail = () => {
   const { t } = useTranslation();
   const params = useParams();
@@ -33,9 +29,7 @@ const ShortcutDetail = () => {
   const userStore = useUserStore();
   const shortcut = shortcutStore.getShortcutById(shortcutId);
   const currentUser = useUserStore().getCurrentUser();
-  const [state, setState] = useState<State>({
-    showEditDrawer: false,
-  });
+  const [showEditDialog, setShowEditDialog] = useState<boolean>(false);
   const [showQRCodeDialog, setShowQRCodeDialog] = useState<boolean>(false);
   const loadingState = useLoading(true);
   const creator = userStore.getUserById(shortcut.creatorId);
@@ -132,12 +126,7 @@ const ShortcutDetail = () => {
                 <>
                   <button
                     className="w-full px-2 flex flex-row justify-start items-center text-left text-foreground leading-8 cursor-pointer rounded hover:bg-accent disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60"
-                    onClick={() => {
-                      setState({
-                        ...state,
-                        showEditDrawer: true,
-                      });
-                    }}
+                    onClick={() => setShowEditDialog(true)}
                   >
                     <Icon.Edit className="w-4 h-auto mr-2" /> {t("common.edit")}
                   </button>
@@ -206,17 +195,7 @@ const ShortcutDetail = () => {
 
       {showQRCodeDialog && <GenerateQRCodeDialog shortcut={shortcut} onClose={() => setShowQRCodeDialog(false)} />}
 
-      {state.showEditDrawer && (
-        <CreateShortcutDrawer
-          shortcutId={shortcut.id}
-          onClose={() =>
-            setState({
-              ...state,
-              showEditDrawer: false,
-            })
-          }
-        />
-      )}
+      {showEditDialog && <EditShortcutDialog shortcut={shortcut} onClose={() => setShowEditDialog(false)} />}
     </>
   );
 };
