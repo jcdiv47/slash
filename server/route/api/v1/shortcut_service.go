@@ -301,7 +301,13 @@ func mapToAnalyticsSlice(m map[string]int32) []*v1pb.GetShortcutAnalyticsRespons
 		})
 	}
 	slices.SortFunc(analyticsSlice, func(i, j *v1pb.GetShortcutAnalyticsResponse_AnalyticsItem) int {
-		return int(i.Count - j.Count)
+		if i.Count != j.Count {
+			if i.Count > j.Count {
+				return -1
+			}
+			return 1
+		}
+		return strings.Compare(i.Name, j.Name)
 	})
 	return analyticsSlice
 }
