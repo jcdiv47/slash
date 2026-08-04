@@ -103,11 +103,11 @@ const EditShortcutDialog = ({ shortcut, onClose, onSaved }: Props) => {
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="top-[8vh] translate-y-0 max-w-xl gap-0 p-0 overflow-hidden [&>button]:hidden"
+        className="top-[8vh] translate-y-0 max-w-xl max-h-[84vh] flex flex-col gap-0 p-0 overflow-hidden [&>button]:hidden"
         onKeyDown={handleKeyDown}
         aria-describedby={undefined}
       >
-        <div className="flex flex-row items-center gap-2 px-4 py-3 border-b border-border">
+        <div className="shrink-0 flex flex-row items-center gap-2 px-4 py-3 border-b border-border">
           <Icon.Edit className="w-4 h-auto text-muted-foreground" />
           <DialogTitle className="text-base">Edit shortcut</DialogTitle>
           <DialogDescription className="sr-only">Edit this shortcut&apos;s name, link and details.</DialogDescription>
@@ -120,7 +120,7 @@ const EditShortcutDialog = ({ shortcut, onClose, onSaved }: Props) => {
           </button>
         </div>
 
-        <div className="max-h-[70vh] overflow-auto px-4 py-5 flex flex-col gap-5">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-5 flex flex-col gap-5">
           <NameField
             value={name}
             isTaken={isTaken}
@@ -241,7 +241,7 @@ const EditShortcutDialog = ({ shortcut, onClose, onSaved }: Props) => {
           </div>
         </div>
 
-        <div className="flex flex-row items-center gap-3 px-4 py-3 border-t border-border bg-muted/40">
+        <div className="shrink-0 flex flex-row items-center gap-3 px-4 py-3 border-t border-border bg-muted/40">
           <span className="hidden sm:inline text-xs text-muted-foreground">
             <span className="font-mono text-foreground">⌘↵</span> save · <span className="font-mono text-foreground">esc</span> cancel
           </span>

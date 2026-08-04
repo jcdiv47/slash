@@ -228,7 +228,10 @@ const CollectionDashboard: React.FC = () => {
                     return (
                       <div
                         key={shortcut.id}
-                        className={cn(ROW_COLUMNS, "w-full px-2.5 py-2 border-b border-border cursor-pointer transition-colors hover:bg-accent/40")}
+                        className={cn(
+                          ROW_COLUMNS,
+                          "w-full px-2.5 py-2 border-b border-border cursor-pointer transition-colors hover:bg-accent/40",
+                        )}
                         onClick={() => navigateTo(`/shortcut/${shortcut.id}`)}
                       >
                         <div className="w-5 h-5 flex justify-center items-center overflow-clip shrink-0">
@@ -254,7 +257,9 @@ const CollectionDashboard: React.FC = () => {
                           {host}
                           {path}
                         </a>
-                        <span className="shortcut-name text-right text-[13px] text-muted-foreground">{formatCount(shortcut.viewCount)}</span>
+                        <span className="shortcut-name text-right text-[13px] text-muted-foreground">
+                          {formatCount(shortcut.viewCount)}
+                        </span>
                         <span className="hidden md:flex flex-row justify-end items-center text-muted-foreground/50">
                           <Icon.ChevronRight className="w-3.5 h-auto" />
                         </span>

@@ -166,22 +166,24 @@ export const groupShortcuts = (shortcuts: Shortcut[], groupBy: GroupBy): Shortcu
       const keys = shortcut.tags.length > 0 ? shortcut.tags : [UNTAGGED_KEY];
       keys.forEach((key) => groups.set(key, (groups.get(key) ?? []).concat(shortcut)));
     });
-    return Array.from(groups.entries())
-      .map(([key, group]) => ({
-        key,
-        label: key === UNTAGGED_KEY ? "Untagged" : `#${key}`,
-        isLocal: false,
-        count: group.length,
-        visits: sumVisits(group),
-        shortcuts: [...group].sort(byVisits),
-      }))
-      // Untagged is a backlog rather than a subject, so it sits at the end
-      // however big it grows.
-      .sort((a, b) => {
-        if (a.key === UNTAGGED_KEY) return 1;
-        if (b.key === UNTAGGED_KEY) return -1;
-        return b.count - a.count || a.label.localeCompare(b.label);
-      });
+    return (
+      Array.from(groups.entries())
+        .map(([key, group]) => ({
+          key,
+          label: key === UNTAGGED_KEY ? "Untagged" : `#${key}`,
+          isLocal: false,
+          count: group.length,
+          visits: sumVisits(group),
+          shortcuts: [...group].sort(byVisits),
+        }))
+        // Untagged is a backlog rather than a subject, so it sits at the end
+        // however big it grows.
+        .sort((a, b) => {
+          if (a.key === UNTAGGED_KEY) return 1;
+          if (b.key === UNTAGGED_KEY) return -1;
+          return b.count - a.count || a.label.localeCompare(b.label);
+        })
+    );
   }
 
   const now = Date.now();

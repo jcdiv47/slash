@@ -89,10 +89,7 @@ const ShortcutContextMenu = ({ shortcut, x, y, onClose }: Props) => {
 
   const handleToggleVisibility = async () => {
     try {
-      await shortcutStore.updateShortcut(
-        { ...shortcut, visibility: isPublic ? Visibility.WORKSPACE : Visibility.PUBLIC },
-        ["visibility"],
-      );
+      await shortcutStore.updateShortcut({ ...shortcut, visibility: isPublic ? Visibility.WORKSPACE : Visibility.PUBLIC }, ["visibility"]);
       toast.success(isPublic ? `s/${shortcut.name} is now workspace-only.` : `s/${shortcut.name} is now public.`);
     } catch (error: any) {
       toast.error(error.details ?? "Could not change visibility.");
