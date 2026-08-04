@@ -1,7 +1,18 @@
+import { uniq } from "lodash-es";
 import { describe, expect, it } from "vitest";
 import { Visibility } from "@/types/proto/api/v1/common";
 import { Shortcut } from "@/types/proto/api/v1/shortcut_service";
-import { checkName, countTags, formatCount, groupBySite, groupShortcuts, matchesQuery, normalizeName, splitLink } from "./shortcut";
+import {
+  checkName,
+  countTags,
+  formatCount,
+  groupBySite,
+  groupShortcuts,
+  matchesQuery,
+  normalizeName,
+  randomName,
+  splitLink,
+} from "./shortcut";
 
 const shortcut = (partial: Partial<Shortcut>) => Shortcut.fromPartial({ visibility: Visibility.WORKSPACE, ...partial });
 
@@ -79,6 +90,34 @@ describe("checkName", () => {
   it("suggests nothing when every suffix within reach is taken", () => {
     const crowded = Array.from({ length: 100 }, (_, i) => shortcut({ id: i + 1, name: i === 0 ? "a" : `a${i + 1}` }));
     expect(checkName("a", crowded)).toEqual({ isTaken: true, suggestion: "" });
+  });
+});
+
+describe("randomName", () => {
+  it("generates a Name the server would accept", () => {
+    const name = randomName([]);
+    expect(name).toBe(normalizeName(name));
+  });
+
+  it("never hands back a Name a Shortcut already holds", () => {
+    // Every pair but one is taken, so the loop has to work for its answer.
+    const generated = Array.from({ length: 200 }, () => randomName([]));
+    const free = generated[0];
+    const taken = uniq(generated)
+      .filter((name) => name !== free)
+      .map((name, i) => shortcut({ id: i + 1, name }));
+    expect(taken.length).toBeGreaterThan(0);
+    for (let attempt = 0; attempt < 20; attempt++) {
+      expect(taken.some((s) => s.name === randomName(taken))).toBe(false);
+    }
+  });
+
+  it("falls back to a suffixed Name when every pair is taken", () => {
+    // Enough draws that every pair is overwhelmingly likely to have come up.
+    const everything = uniq(Array.from({ length: 20000 }, () => randomName([]))).map((name, i) => shortcut({ id: i + 1, name }));
+    const name = randomName(everything);
+    expect(everything.some((s) => s.name === name)).toBe(false);
+    expect(name).toMatch(/2$/);
   });
 });
 

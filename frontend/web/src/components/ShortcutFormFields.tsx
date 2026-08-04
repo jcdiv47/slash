@@ -22,11 +22,15 @@ interface NameFieldProps {
   // The line under the field, kept at a fixed height by the caller's content or
   // not, so the form does not jump as it changes.
   hint?: React.ReactNode;
+  // Sits on the Name line, after the availability marker. Only the create
+  // dialog has anything to put here: renaming an existing Shortcut at random
+  // would break the links pointing at it.
+  action?: React.ReactNode;
 }
 
 // The Name gets display size in both dialogs: it is the decision being made
 // when creating, and the thing links depend on when editing.
-export const NameField = ({ value, isTaken, inputRef, onChange, hint }: NameFieldProps) => (
+export const NameField = ({ value, isTaken, inputRef, onChange, hint, action }: NameFieldProps) => (
   <div>
     <div className="flex flex-row items-center gap-2 pb-2 border-b border-input">
       <span className="shortcut-name text-2xl text-muted-foreground">s/</span>
@@ -47,6 +51,7 @@ export const NameField = ({ value, isTaken, inputRef, onChange, hint }: NameFiel
             available
           </span>
         ))}
+      {action}
     </div>
     <div className="mt-2 min-h-5 text-xs text-muted-foreground truncate">{hint}</div>
   </div>

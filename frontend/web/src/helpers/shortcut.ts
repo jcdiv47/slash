@@ -61,6 +61,73 @@ export const checkName = (name: string, shortcuts: Shortcut[], ownId?: number): 
   return { isTaken: true, suggestion: "" };
 };
 
+// Two short, unambiguous word lists: a random Name is a placeholder someone
+// will read back to a colleague, so it has to survive being spoken aloud.
+const NAME_ADJECTIVES = [
+  "amber",
+  "brisk",
+  "calm",
+  "clever",
+  "cosmic",
+  "eager",
+  "gentle",
+  "golden",
+  "hidden",
+  "lucky",
+  "mellow",
+  "nimble",
+  "quiet",
+  "rapid",
+  "silver",
+  "solar",
+  "spry",
+  "steady",
+  "sunny",
+  "vivid",
+];
+
+const NAME_NOUNS = [
+  "anchor",
+  "beacon",
+  "canyon",
+  "cedar",
+  "comet",
+  "delta",
+  "ember",
+  "falcon",
+  "harbor",
+  "lantern",
+  "meadow",
+  "orbit",
+  "otter",
+  "prism",
+  "quartz",
+  "ridge",
+  "river",
+  "summit",
+  "willow",
+  "zephyr",
+];
+
+const pick = <T>(values: T[]) => values[Math.floor(Math.random() * values.length)];
+
+const RANDOM_NAME_ATTEMPTS = 20;
+
+// A throwaway Name for a Shortcut whose Link matters more than what it is
+// called. Names already in use are skipped, and once the pairs run thin a
+// number is appended rather than handing back a Name that cannot be saved.
+export const randomName = (shortcuts: Shortcut[]): string => {
+  const taken = new Set(shortcuts.map((shortcut) => shortcut.name));
+  for (let attempt = 0; attempt < RANDOM_NAME_ATTEMPTS; attempt++) {
+    const candidate = `${pick(NAME_ADJECTIVES)}-${pick(NAME_NOUNS)}`;
+    if (!taken.has(candidate)) {
+      return candidate;
+    }
+  }
+  const fallback = `${pick(NAME_ADJECTIVES)}-${pick(NAME_NOUNS)}`;
+  return checkName(fallback, shortcuts).suggestion || fallback;
+};
+
 export const matchesQuery = (shortcut: Shortcut, query: string) => {
   const needle = query.trim().toLowerCase();
   if (!needle) {

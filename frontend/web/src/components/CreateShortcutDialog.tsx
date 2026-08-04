@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { checkName, normalizeName } from "@/helpers/shortcut";
+import { checkName, normalizeName, randomName } from "@/helpers/shortcut";
 import { absolutifyLink } from "@/helpers/utils";
 import { useShortcutStore, useWorkspaceStore } from "@/stores";
 import { Visibility } from "@/types/proto/api/v1/common";
@@ -73,6 +73,13 @@ const CreateShortcutDialog = ({ initialName, onClose, onCreated }: Props) => {
     }
   };
 
+  // Focus goes back to the field: a generated Name is a starting point, and
+  // more often than not the next thing someone does is edit it.
+  const handleRandomName = () => {
+    setName(randomName(shortcutList));
+    nameRef.current?.focus();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
@@ -108,6 +115,17 @@ const CreateShortcutDialog = ({ initialName, onClose, onCreated }: Props) => {
             isTaken={isTaken}
             inputRef={nameRef}
             onChange={setName}
+            action={
+              <button
+                className="shrink-0 w-7 h-7 flex justify-center items-center rounded-sm border border-input text-muted-foreground hover:text-foreground"
+                type="button"
+                title="Generate a random name"
+                aria-label="Generate a random name"
+                onClick={handleRandomName}
+              >
+                <Icon.Dices className="w-3.5 h-auto" />
+              </button>
+            }
             hint={
               <>
                 {isTaken && suggestion && (
