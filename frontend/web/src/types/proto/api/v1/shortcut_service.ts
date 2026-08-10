@@ -49,6 +49,14 @@ export interface GetShortcutByNameRequest {
   name: string;
 }
 
+export interface GetLinkMetadataRequest {
+  link: string;
+}
+
+export interface GetLinkMetadataResponse {
+  title: string;
+}
+
 export interface CreateShortcutRequest {
   shortcut?: Shortcut | undefined;
 }
@@ -512,6 +520,98 @@ export const GetShortcutByNameRequest: MessageFns<GetShortcutByNameRequest> = {
   },
 };
 
+function createBaseGetLinkMetadataRequest(): GetLinkMetadataRequest {
+  return { link: "" };
+}
+
+export const GetLinkMetadataRequest: MessageFns<GetLinkMetadataRequest> = {
+  encode(message: GetLinkMetadataRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.link !== "") {
+      writer.uint32(10).string(message.link);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetLinkMetadataRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetLinkMetadataRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.link = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create(base?: DeepPartial<GetLinkMetadataRequest>): GetLinkMetadataRequest {
+    return GetLinkMetadataRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<GetLinkMetadataRequest>): GetLinkMetadataRequest {
+    const message = createBaseGetLinkMetadataRequest();
+    message.link = object.link ?? "";
+    return message;
+  },
+};
+
+function createBaseGetLinkMetadataResponse(): GetLinkMetadataResponse {
+  return { title: "" };
+}
+
+export const GetLinkMetadataResponse: MessageFns<GetLinkMetadataResponse> = {
+  encode(message: GetLinkMetadataResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.title !== "") {
+      writer.uint32(10).string(message.title);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetLinkMetadataResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetLinkMetadataResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.title = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create(base?: DeepPartial<GetLinkMetadataResponse>): GetLinkMetadataResponse {
+    return GetLinkMetadataResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<GetLinkMetadataResponse>): GetLinkMetadataResponse {
+    const message = createBaseGetLinkMetadataResponse();
+    message.title = object.title ?? "";
+    return message;
+  },
+};
+
 function createBaseCreateShortcutRequest(): CreateShortcutRequest {
   return { shortcut: undefined };
 }
@@ -910,6 +1010,15 @@ export const ShortcutServiceDefinition = {
       requestType: GetShortcutByNameRequest,
       requestStream: false,
       responseType: Shortcut,
+      responseStream: false,
+      options: {},
+    },
+    /** GetLinkMetadata fetches metadata from a link. */
+    getLinkMetadata: {
+      name: "GetLinkMetadata",
+      requestType: GetLinkMetadataRequest,
+      requestStream: false,
+      responseType: GetLinkMetadataResponse,
       responseStream: false,
       options: {},
     },

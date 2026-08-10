@@ -39,9 +39,47 @@ const CreateShortcutDialog = ({ initialName, onClose, onCreated }: Props) => {
   );
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const nameRef = useRef<HTMLInputElement>(null);
+  const titleWasEditedRef = useRef<boolean>(false);
   const shortcutList = shortcutStore.getShortcutList();
 
   useEffect(() => nameRef.current?.focus(), []);
+
+  useEffect(() => {
+    if (titleWasEditedRef.current) {
+      return;
+    }
+
+    const trimmedLink = link.trim();
+    try {
+      const url = new URL(trimmedLink);
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        return;
+      }
+    } catch {
+      return;
+    }
+
+    // Avoid fetching on every keystroke. A pasted link settles immediately,
+    // while a manually typed link is fetched once the Member pauses.
+    setTitle("");
+    let cancelled = false;
+    const timeout = window.setTimeout(async () => {
+      try {
+        const metadata = await shortcutStore.fetchLinkMetadata(trimmedLink);
+        if (!cancelled && !titleWasEditedRef.current && metadata.title) {
+          setTitle(metadata.title);
+        }
+      } catch {
+        // Metadata is a convenience; an unreachable page must not prevent the
+        // shortcut from being created.
+      }
+    }, 500);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [link, shortcutStore]);
 
   const { isTaken, suggestion } = useMemo(() => checkName(name, shortcutList), [name, shortcutList]);
 
@@ -157,7 +195,10 @@ const CreateShortcutDialog = ({ initialName, onClose, onCreated }: Props) => {
               value={title}
               placeholder="What future you will search for"
               aria-label="Title"
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                titleWasEditedRef.current = true;
+                setTitle(e.target.value);
+              }}
             />
           </div>
 

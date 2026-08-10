@@ -325,6 +325,94 @@ func (x *GetShortcutByNameRequest) GetName() string {
 	return ""
 }
 
+type GetLinkMetadataRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Link          string                 `protobuf:"bytes,1,opt,name=link,proto3" json:"link,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLinkMetadataRequest) Reset() {
+	*x = GetLinkMetadataRequest{}
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLinkMetadataRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLinkMetadataRequest) ProtoMessage() {}
+
+func (x *GetLinkMetadataRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLinkMetadataRequest.ProtoReflect.Descriptor instead.
+func (*GetLinkMetadataRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetLinkMetadataRequest) GetLink() string {
+	if x != nil {
+		return x.Link
+	}
+	return ""
+}
+
+type GetLinkMetadataResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLinkMetadataResponse) Reset() {
+	*x = GetLinkMetadataResponse{}
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLinkMetadataResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLinkMetadataResponse) ProtoMessage() {}
+
+func (x *GetLinkMetadataResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLinkMetadataResponse.ProtoReflect.Descriptor instead.
+func (*GetLinkMetadataResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetLinkMetadataResponse) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
 type CreateShortcutRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Shortcut      *Shortcut              `protobuf:"bytes,1,opt,name=shortcut,proto3" json:"shortcut,omitempty"`
@@ -334,7 +422,7 @@ type CreateShortcutRequest struct {
 
 func (x *CreateShortcutRequest) Reset() {
 	*x = CreateShortcutRequest{}
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[5]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -346,7 +434,7 @@ func (x *CreateShortcutRequest) String() string {
 func (*CreateShortcutRequest) ProtoMessage() {}
 
 func (x *CreateShortcutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[5]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -359,7 +447,7 @@ func (x *CreateShortcutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateShortcutRequest.ProtoReflect.Descriptor instead.
 func (*CreateShortcutRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{5}
+	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateShortcutRequest) GetShortcut() *Shortcut {
@@ -379,7 +467,7 @@ type UpdateShortcutRequest struct {
 
 func (x *UpdateShortcutRequest) Reset() {
 	*x = UpdateShortcutRequest{}
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[6]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -391,7 +479,7 @@ func (x *UpdateShortcutRequest) String() string {
 func (*UpdateShortcutRequest) ProtoMessage() {}
 
 func (x *UpdateShortcutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[6]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -404,7 +492,7 @@ func (x *UpdateShortcutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateShortcutRequest.ProtoReflect.Descriptor instead.
 func (*UpdateShortcutRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{6}
+	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateShortcutRequest) GetShortcut() *Shortcut {
@@ -430,7 +518,7 @@ type DeleteShortcutRequest struct {
 
 func (x *DeleteShortcutRequest) Reset() {
 	*x = DeleteShortcutRequest{}
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[7]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -442,7 +530,7 @@ func (x *DeleteShortcutRequest) String() string {
 func (*DeleteShortcutRequest) ProtoMessage() {}
 
 func (x *DeleteShortcutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[7]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -455,7 +543,7 @@ func (x *DeleteShortcutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteShortcutRequest.ProtoReflect.Descriptor instead.
 func (*DeleteShortcutRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{7}
+	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DeleteShortcutRequest) GetId() int32 {
@@ -474,7 +562,7 @@ type GetShortcutAnalyticsRequest struct {
 
 func (x *GetShortcutAnalyticsRequest) Reset() {
 	*x = GetShortcutAnalyticsRequest{}
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[8]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -486,7 +574,7 @@ func (x *GetShortcutAnalyticsRequest) String() string {
 func (*GetShortcutAnalyticsRequest) ProtoMessage() {}
 
 func (x *GetShortcutAnalyticsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[8]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -499,7 +587,7 @@ func (x *GetShortcutAnalyticsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetShortcutAnalyticsRequest.ProtoReflect.Descriptor instead.
 func (*GetShortcutAnalyticsRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{8}
+	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetShortcutAnalyticsRequest) GetId() int32 {
@@ -520,7 +608,7 @@ type GetShortcutAnalyticsResponse struct {
 
 func (x *GetShortcutAnalyticsResponse) Reset() {
 	*x = GetShortcutAnalyticsResponse{}
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[9]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -532,7 +620,7 @@ func (x *GetShortcutAnalyticsResponse) String() string {
 func (*GetShortcutAnalyticsResponse) ProtoMessage() {}
 
 func (x *GetShortcutAnalyticsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[9]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -545,7 +633,7 @@ func (x *GetShortcutAnalyticsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetShortcutAnalyticsResponse.ProtoReflect.Descriptor instead.
 func (*GetShortcutAnalyticsResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{9}
+	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetShortcutAnalyticsResponse) GetReferences() []*GetShortcutAnalyticsResponse_AnalyticsItem {
@@ -580,7 +668,7 @@ type Shortcut_OpenGraphMetadata struct {
 
 func (x *Shortcut_OpenGraphMetadata) Reset() {
 	*x = Shortcut_OpenGraphMetadata{}
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[10]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -592,7 +680,7 @@ func (x *Shortcut_OpenGraphMetadata) String() string {
 func (*Shortcut_OpenGraphMetadata) ProtoMessage() {}
 
 func (x *Shortcut_OpenGraphMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[10]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -639,7 +727,7 @@ type GetShortcutAnalyticsResponse_AnalyticsItem struct {
 
 func (x *GetShortcutAnalyticsResponse_AnalyticsItem) Reset() {
 	*x = GetShortcutAnalyticsResponse_AnalyticsItem{}
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[11]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -651,7 +739,7 @@ func (x *GetShortcutAnalyticsResponse_AnalyticsItem) String() string {
 func (*GetShortcutAnalyticsResponse_AnalyticsItem) ProtoMessage() {}
 
 func (x *GetShortcutAnalyticsResponse_AnalyticsItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_shortcut_service_proto_msgTypes[11]
+	mi := &file_api_v1_shortcut_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -664,7 +752,7 @@ func (x *GetShortcutAnalyticsResponse_AnalyticsItem) ProtoReflect() protoreflect
 
 // Deprecated: Use GetShortcutAnalyticsResponse_AnalyticsItem.ProtoReflect.Descriptor instead.
 func (*GetShortcutAnalyticsResponse_AnalyticsItem) Descriptor() ([]byte, []int) {
-	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{9, 0}
+	return file_api_v1_shortcut_service_proto_rawDescGZIP(), []int{11, 0}
 }
 
 func (x *GetShortcutAnalyticsResponse_AnalyticsItem) GetName() string {
@@ -715,7 +803,11 @@ const file_api_v1_shortcut_service_proto_rawDesc = "" +
 	"\x12GetShortcutRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\".\n" +
 	"\x18GetShortcutByNameRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\"K\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\",\n" +
+	"\x16GetLinkMetadataRequest\x12\x12\n" +
+	"\x04link\x18\x01 \x01(\tR\x04link\"/\n" +
+	"\x17GetLinkMetadataResponse\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\"K\n" +
 	"\x15CreateShortcutRequest\x122\n" +
 	"\bshortcut\x18\x01 \x01(\v2\x16.slash.api.v1.ShortcutR\bshortcut\"\x88\x01\n" +
 	"\x15UpdateShortcutRequest\x122\n" +
@@ -734,11 +826,12 @@ const file_api_v1_shortcut_service_proto_rawDesc = "" +
 	"\bbrowsers\x18\x03 \x03(\v28.slash.api.v1.GetShortcutAnalyticsResponse.AnalyticsItemR\bbrowsers\x1a9\n" +
 	"\rAnalyticsItem\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
-	"\x05count\x18\x02 \x01(\x05R\x05count2\xec\x06\n" +
+	"\x05count\x18\x02 \x01(\x05R\x05count2\xce\a\n" +
 	"\x0fShortcutService\x12s\n" +
 	"\rListShortcuts\x12\".slash.api.v1.ListShortcutsRequest\x1a#.slash.api.v1.ListShortcutsResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/api/v1/shortcuts\x12l\n" +
 	"\vGetShortcut\x12 .slash.api.v1.GetShortcutRequest\x1a\x16.slash.api.v1.Shortcut\"#\xdaA\x02id\x82\xd3\xe4\x93\x02\x18\x12\x16/api/v1/shortcuts/{id}\x12U\n" +
-	"\x11GetShortcutByName\x12&.slash.api.v1.GetShortcutByNameRequest\x1a\x16.slash.api.v1.Shortcut\"\x00\x12r\n" +
+	"\x11GetShortcutByName\x12&.slash.api.v1.GetShortcutByNameRequest\x1a\x16.slash.api.v1.Shortcut\"\x00\x12`\n" +
+	"\x0fGetLinkMetadata\x12$.slash.api.v1.GetLinkMetadataRequest\x1a%.slash.api.v1.GetLinkMetadataResponse\"\x00\x12r\n" +
 	"\x0eCreateShortcut\x12#.slash.api.v1.CreateShortcutRequest\x1a\x16.slash.api.v1.Shortcut\"#\x82\xd3\xe4\x93\x02\x1d:\bshortcut\"\x11/api/v1/shortcuts\x12\x97\x01\n" +
 	"\x0eUpdateShortcut\x12#.slash.api.v1.UpdateShortcutRequest\x1a\x16.slash.api.v1.Shortcut\"H\xdaA\x14shortcut,update_mask\x82\xd3\xe4\x93\x02+:\bshortcut\x1a\x1f/api/v1/shortcuts/{shortcut.id}\x12r\n" +
 	"\x0eDeleteShortcut\x12#.slash.api.v1.DeleteShortcutRequest\x1a\x16.google.protobuf.Empty\"#\xdaA\x02id\x82\xd3\xe4\x93\x02\x18*\x16/api/v1/shortcuts/{id}\x12\x9c\x01\n" +
@@ -757,53 +850,57 @@ func file_api_v1_shortcut_service_proto_rawDescGZIP() []byte {
 	return file_api_v1_shortcut_service_proto_rawDescData
 }
 
-var file_api_v1_shortcut_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_api_v1_shortcut_service_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_api_v1_shortcut_service_proto_goTypes = []any{
 	(*Shortcut)(nil),                                   // 0: slash.api.v1.Shortcut
 	(*ListShortcutsRequest)(nil),                       // 1: slash.api.v1.ListShortcutsRequest
 	(*ListShortcutsResponse)(nil),                      // 2: slash.api.v1.ListShortcutsResponse
 	(*GetShortcutRequest)(nil),                         // 3: slash.api.v1.GetShortcutRequest
 	(*GetShortcutByNameRequest)(nil),                   // 4: slash.api.v1.GetShortcutByNameRequest
-	(*CreateShortcutRequest)(nil),                      // 5: slash.api.v1.CreateShortcutRequest
-	(*UpdateShortcutRequest)(nil),                      // 6: slash.api.v1.UpdateShortcutRequest
-	(*DeleteShortcutRequest)(nil),                      // 7: slash.api.v1.DeleteShortcutRequest
-	(*GetShortcutAnalyticsRequest)(nil),                // 8: slash.api.v1.GetShortcutAnalyticsRequest
-	(*GetShortcutAnalyticsResponse)(nil),               // 9: slash.api.v1.GetShortcutAnalyticsResponse
-	(*Shortcut_OpenGraphMetadata)(nil),                 // 10: slash.api.v1.Shortcut.OpenGraphMetadata
-	(*GetShortcutAnalyticsResponse_AnalyticsItem)(nil), // 11: slash.api.v1.GetShortcutAnalyticsResponse.AnalyticsItem
-	(*timestamppb.Timestamp)(nil),                      // 12: google.protobuf.Timestamp
-	(Visibility)(0),                                    // 13: slash.api.v1.Visibility
-	(*fieldmaskpb.FieldMask)(nil),                      // 14: google.protobuf.FieldMask
-	(*emptypb.Empty)(nil),                              // 15: google.protobuf.Empty
+	(*GetLinkMetadataRequest)(nil),                     // 5: slash.api.v1.GetLinkMetadataRequest
+	(*GetLinkMetadataResponse)(nil),                    // 6: slash.api.v1.GetLinkMetadataResponse
+	(*CreateShortcutRequest)(nil),                      // 7: slash.api.v1.CreateShortcutRequest
+	(*UpdateShortcutRequest)(nil),                      // 8: slash.api.v1.UpdateShortcutRequest
+	(*DeleteShortcutRequest)(nil),                      // 9: slash.api.v1.DeleteShortcutRequest
+	(*GetShortcutAnalyticsRequest)(nil),                // 10: slash.api.v1.GetShortcutAnalyticsRequest
+	(*GetShortcutAnalyticsResponse)(nil),               // 11: slash.api.v1.GetShortcutAnalyticsResponse
+	(*Shortcut_OpenGraphMetadata)(nil),                 // 12: slash.api.v1.Shortcut.OpenGraphMetadata
+	(*GetShortcutAnalyticsResponse_AnalyticsItem)(nil), // 13: slash.api.v1.GetShortcutAnalyticsResponse.AnalyticsItem
+	(*timestamppb.Timestamp)(nil),                      // 14: google.protobuf.Timestamp
+	(Visibility)(0),                                    // 15: slash.api.v1.Visibility
+	(*fieldmaskpb.FieldMask)(nil),                      // 16: google.protobuf.FieldMask
+	(*emptypb.Empty)(nil),                              // 17: google.protobuf.Empty
 }
 var file_api_v1_shortcut_service_proto_depIdxs = []int32{
-	12, // 0: slash.api.v1.Shortcut.created_time:type_name -> google.protobuf.Timestamp
-	12, // 1: slash.api.v1.Shortcut.updated_time:type_name -> google.protobuf.Timestamp
-	13, // 2: slash.api.v1.Shortcut.visibility:type_name -> slash.api.v1.Visibility
-	10, // 3: slash.api.v1.Shortcut.og_metadata:type_name -> slash.api.v1.Shortcut.OpenGraphMetadata
+	14, // 0: slash.api.v1.Shortcut.created_time:type_name -> google.protobuf.Timestamp
+	14, // 1: slash.api.v1.Shortcut.updated_time:type_name -> google.protobuf.Timestamp
+	15, // 2: slash.api.v1.Shortcut.visibility:type_name -> slash.api.v1.Visibility
+	12, // 3: slash.api.v1.Shortcut.og_metadata:type_name -> slash.api.v1.Shortcut.OpenGraphMetadata
 	0,  // 4: slash.api.v1.ListShortcutsResponse.shortcuts:type_name -> slash.api.v1.Shortcut
 	0,  // 5: slash.api.v1.CreateShortcutRequest.shortcut:type_name -> slash.api.v1.Shortcut
 	0,  // 6: slash.api.v1.UpdateShortcutRequest.shortcut:type_name -> slash.api.v1.Shortcut
-	14, // 7: slash.api.v1.UpdateShortcutRequest.update_mask:type_name -> google.protobuf.FieldMask
-	11, // 8: slash.api.v1.GetShortcutAnalyticsResponse.references:type_name -> slash.api.v1.GetShortcutAnalyticsResponse.AnalyticsItem
-	11, // 9: slash.api.v1.GetShortcutAnalyticsResponse.devices:type_name -> slash.api.v1.GetShortcutAnalyticsResponse.AnalyticsItem
-	11, // 10: slash.api.v1.GetShortcutAnalyticsResponse.browsers:type_name -> slash.api.v1.GetShortcutAnalyticsResponse.AnalyticsItem
+	16, // 7: slash.api.v1.UpdateShortcutRequest.update_mask:type_name -> google.protobuf.FieldMask
+	13, // 8: slash.api.v1.GetShortcutAnalyticsResponse.references:type_name -> slash.api.v1.GetShortcutAnalyticsResponse.AnalyticsItem
+	13, // 9: slash.api.v1.GetShortcutAnalyticsResponse.devices:type_name -> slash.api.v1.GetShortcutAnalyticsResponse.AnalyticsItem
+	13, // 10: slash.api.v1.GetShortcutAnalyticsResponse.browsers:type_name -> slash.api.v1.GetShortcutAnalyticsResponse.AnalyticsItem
 	1,  // 11: slash.api.v1.ShortcutService.ListShortcuts:input_type -> slash.api.v1.ListShortcutsRequest
 	3,  // 12: slash.api.v1.ShortcutService.GetShortcut:input_type -> slash.api.v1.GetShortcutRequest
 	4,  // 13: slash.api.v1.ShortcutService.GetShortcutByName:input_type -> slash.api.v1.GetShortcutByNameRequest
-	5,  // 14: slash.api.v1.ShortcutService.CreateShortcut:input_type -> slash.api.v1.CreateShortcutRequest
-	6,  // 15: slash.api.v1.ShortcutService.UpdateShortcut:input_type -> slash.api.v1.UpdateShortcutRequest
-	7,  // 16: slash.api.v1.ShortcutService.DeleteShortcut:input_type -> slash.api.v1.DeleteShortcutRequest
-	8,  // 17: slash.api.v1.ShortcutService.GetShortcutAnalytics:input_type -> slash.api.v1.GetShortcutAnalyticsRequest
-	2,  // 18: slash.api.v1.ShortcutService.ListShortcuts:output_type -> slash.api.v1.ListShortcutsResponse
-	0,  // 19: slash.api.v1.ShortcutService.GetShortcut:output_type -> slash.api.v1.Shortcut
-	0,  // 20: slash.api.v1.ShortcutService.GetShortcutByName:output_type -> slash.api.v1.Shortcut
-	0,  // 21: slash.api.v1.ShortcutService.CreateShortcut:output_type -> slash.api.v1.Shortcut
-	0,  // 22: slash.api.v1.ShortcutService.UpdateShortcut:output_type -> slash.api.v1.Shortcut
-	15, // 23: slash.api.v1.ShortcutService.DeleteShortcut:output_type -> google.protobuf.Empty
-	9,  // 24: slash.api.v1.ShortcutService.GetShortcutAnalytics:output_type -> slash.api.v1.GetShortcutAnalyticsResponse
-	18, // [18:25] is the sub-list for method output_type
-	11, // [11:18] is the sub-list for method input_type
+	5,  // 14: slash.api.v1.ShortcutService.GetLinkMetadata:input_type -> slash.api.v1.GetLinkMetadataRequest
+	7,  // 15: slash.api.v1.ShortcutService.CreateShortcut:input_type -> slash.api.v1.CreateShortcutRequest
+	8,  // 16: slash.api.v1.ShortcutService.UpdateShortcut:input_type -> slash.api.v1.UpdateShortcutRequest
+	9,  // 17: slash.api.v1.ShortcutService.DeleteShortcut:input_type -> slash.api.v1.DeleteShortcutRequest
+	10, // 18: slash.api.v1.ShortcutService.GetShortcutAnalytics:input_type -> slash.api.v1.GetShortcutAnalyticsRequest
+	2,  // 19: slash.api.v1.ShortcutService.ListShortcuts:output_type -> slash.api.v1.ListShortcutsResponse
+	0,  // 20: slash.api.v1.ShortcutService.GetShortcut:output_type -> slash.api.v1.Shortcut
+	0,  // 21: slash.api.v1.ShortcutService.GetShortcutByName:output_type -> slash.api.v1.Shortcut
+	6,  // 22: slash.api.v1.ShortcutService.GetLinkMetadata:output_type -> slash.api.v1.GetLinkMetadataResponse
+	0,  // 23: slash.api.v1.ShortcutService.CreateShortcut:output_type -> slash.api.v1.Shortcut
+	0,  // 24: slash.api.v1.ShortcutService.UpdateShortcut:output_type -> slash.api.v1.Shortcut
+	17, // 25: slash.api.v1.ShortcutService.DeleteShortcut:output_type -> google.protobuf.Empty
+	11, // 26: slash.api.v1.ShortcutService.GetShortcutAnalytics:output_type -> slash.api.v1.GetShortcutAnalyticsResponse
+	19, // [19:27] is the sub-list for method output_type
+	11, // [11:19] is the sub-list for method input_type
 	11, // [11:11] is the sub-list for extension type_name
 	11, // [11:11] is the sub-list for extension extendee
 	0,  // [0:11] is the sub-list for field type_name
@@ -821,7 +918,7 @@ func file_api_v1_shortcut_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_shortcut_service_proto_rawDesc), len(file_api_v1_shortcut_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

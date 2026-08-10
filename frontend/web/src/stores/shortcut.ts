@@ -48,6 +48,9 @@ const useShortcutStore = create(
       const shortcutMap = get().shortcutMapById;
       return shortcutMap[id] || unknownShortcut;
     },
+    fetchLinkMetadata: async (link: string) => {
+      return shortcutServiceClient.getLinkMetadata({ link });
+    },
     getShortcutList: () => {
       return Object.values(get().shortcutMapById);
     },
