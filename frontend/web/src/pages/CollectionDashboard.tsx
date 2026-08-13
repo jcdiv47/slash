@@ -87,7 +87,22 @@ const CollectionDashboard: React.FC = () => {
   };
 
   if (loadingState.isLoading) {
-    return null;
+    // Rail-and-pane-shaped placeholders rather than a blank page, so the layout
+    // holds its shape while the lists arrive.
+    return (
+      <PageContainer className="pt-6 pb-16">
+        <div className="w-full grid grid-cols-1 md:grid-cols-[16.5rem_minmax(0,1fr)]">
+          <div className="flex flex-col gap-2 pb-4 md:pb-0 md:pr-4 md:border-r md:border-border">
+            {Array.from({ length: 3 }, (_, i) => (
+              <div key={i} className="h-16 rounded-md border border-border bg-card opacity-60" />
+            ))}
+          </div>
+          <div className="hidden md:block md:pl-6">
+            <div className="h-16 rounded-md border border-border bg-card opacity-60" />
+          </div>
+        </div>
+      </PageContainer>
+    );
   }
 
   if (collections.length === 0) {

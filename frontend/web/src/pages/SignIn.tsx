@@ -33,49 +33,48 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-row justify-center items-center w-full h-auto pt-12 sm:pt-24 bg-background">
-      <div className="w-80 max-w-full h-full py-4 flex flex-col justify-start items-center">
-        <div className="w-full py-4 grow flex flex-col justify-center items-center">
-          <div className="flex flex-row justify-start items-center w-auto mx-auto gap-y-2 mb-4">
-            <Logo className="mr-2" />
-            <span className="text-3xl text-foreground opacity-80">Slash</span>
-          </div>
-          {!workspaceStore.setting.disallowPasswordAuth ? (
-            <PasswordAuthForm />
-          ) : (
-            <p className="w-full text-2xl mt-2 text-muted-foreground">Password auth is not allowed.</p>
-          )}
-          {!workspaceStore.setting.disallowUserRegistration && !workspaceStore.setting.disallowPasswordAuth && (
-            <p className="w-full mt-4 text-sm">
-              <span className="text-muted-foreground">{"Don't have an account yet?"}</span>
-              <Link className="cursor-pointer ml-2 font-medium text-foreground hover:underline" to="/auth/signup" viewTransition>
-                {t("auth.sign-up")}
-              </Link>
-            </p>
-          )}
-          {workspaceStore.setting.identityProviders.length > 0 && (
-            <>
-              <div className="w-full flex items-center my-4">
-                <Separator className="flex-1" />
-                <span className="px-2 text-sm text-muted-foreground">{t("common.or")}</span>
-                <Separator className="flex-1" />
-              </div>
-              <div className="w-full flex flex-col space-y-2">
-                {workspaceStore.setting.identityProviders.map((identityProvider) => (
-                  <Button
-                    key={identityProvider.id}
-                    variant="outline"
-                    className="w-full"
-                    size="default"
-                    onClick={() => handleSignInWithIdentityProvider(identityProvider)}
-                  >
-                    {t("auth.sign-in-with", { provider: identityProvider.title })}
-                  </Button>
-                ))}
-              </div>
-            </>
-          )}
+    <div className="w-full min-h-[100dvh] px-4 flex flex-col justify-center items-center bg-background">
+      {/* pb pushes the block optically above centre; mathematically centred reads low. */}
+      <div className="w-80 max-w-full pb-16 flex flex-col items-stretch">
+        <div className="mb-8 flex flex-row justify-center items-center text-foreground">
+          <Logo className="!w-6 mr-2" />
+          <span className="text-xl font-medium tracking-tight">Slash</span>
         </div>
+        {!workspaceStore.setting.disallowPasswordAuth ? (
+          <PasswordAuthForm />
+        ) : (
+          <p className="text-sm text-center text-muted-foreground">Password sign-in is disabled on this workspace.</p>
+        )}
+        {!workspaceStore.setting.disallowUserRegistration && !workspaceStore.setting.disallowPasswordAuth && (
+          <p className="mt-4 text-sm text-center">
+            <span className="text-muted-foreground">{"Don't have an account yet?"}</span>
+            <Link className="cursor-pointer ml-2 font-medium text-foreground hover:underline" to="/auth/signup" viewTransition>
+              {t("auth.sign-up")}
+            </Link>
+          </p>
+        )}
+        {workspaceStore.setting.identityProviders.length > 0 && (
+          <>
+            <div className="w-full flex items-center my-4">
+              <Separator className="flex-1" />
+              <span className="px-2 text-sm text-muted-foreground">{t("common.or")}</span>
+              <Separator className="flex-1" />
+            </div>
+            <div className="w-full flex flex-col space-y-2">
+              {workspaceStore.setting.identityProviders.map((identityProvider) => (
+                <Button
+                  key={identityProvider.id}
+                  variant="outline"
+                  className="w-full"
+                  size="default"
+                  onClick={() => handleSignInWithIdentityProvider(identityProvider)}
+                >
+                  {t("auth.sign-in-with", { provider: identityProvider.title })}
+                </Button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
