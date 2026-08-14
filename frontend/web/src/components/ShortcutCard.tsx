@@ -67,9 +67,9 @@ const ShortcutCard = ({ shortcut, density = "comfortable", maxVisits = 0, classN
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden w-full flex flex-col justify-start items-stretch transition-colors",
+        "group relative overflow-hidden w-full flex flex-col justify-start items-stretch transition-[border-color,box-shadow,background-color] duration-150",
         step.card,
-        onClick && "cursor-pointer hover:bg-accent/40",
+        onClick && "cursor-pointer hover:bg-accent/40 hover:border-muted-foreground/30 hover:shadow-sm",
         className,
       )}
       onClick={onClick}

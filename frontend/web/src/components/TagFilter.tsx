@@ -26,7 +26,7 @@ const TagFilter = ({ tags }: Props) => {
           <button
             key={tag.name}
             className={cn(
-              "h-6 px-2.5 inline-flex items-center gap-1.5 rounded-md text-sm transition-colors",
+              "h-6 px-2.5 inline-flex items-center gap-1.5 rounded-md text-sm transition-[color,background-color,transform] duration-150 active:scale-[0.98]",
               isSelected ? "bg-primary text-primary-foreground font-medium" : "bg-secondary text-muted-foreground hover:text-foreground",
             )}
             aria-pressed={isSelected}
@@ -42,7 +42,7 @@ const TagFilter = ({ tags }: Props) => {
       })}
       {selectedTags.length > 0 && (
         <button
-          className="h-6 px-2.5 rounded-md border border-input text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          className="h-6 px-2.5 rounded-md border border-input text-sm font-medium text-muted-foreground hover:text-foreground transition-[color,transform] duration-150 active:scale-[0.98]"
           onClick={() => viewStore.setFilter({ tags: [] })}
         >
           Clear

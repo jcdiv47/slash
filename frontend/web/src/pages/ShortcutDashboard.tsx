@@ -124,7 +124,7 @@ const ShortcutDashboard: React.FC = () => {
           // its shape while the list arrives.
           <div className="w-full grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(17rem,1fr))]">
             {Array.from({ length: 8 }, (_, i) => (
-              <div key={i} className="h-28 rounded-md border border-border bg-card opacity-60" />
+              <div key={i} className="h-28 animate-pulse rounded-md border border-border bg-card opacity-60" />
             ))}
           </div>
         ) : orderedShortcutList.length === 0 ? (

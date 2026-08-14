@@ -92,6 +92,16 @@ module.exports = {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
   		},
+		// Shadows carry the zinc hue of the page rather than pure black, so an
+		// elevated surface reads as lit by the same light as the background.
+		boxShadow: {
+			sm: '0 1px 2px 0 hsl(240 10% 4% / 0.05)',
+			DEFAULT: '0 1px 3px 0 hsl(240 10% 4% / 0.08), 0 1px 2px -1px hsl(240 10% 4% / 0.08)',
+			md: '0 4px 6px -1px hsl(240 10% 4% / 0.08), 0 2px 4px -2px hsl(240 10% 4% / 0.08)',
+			lg: '0 10px 15px -3px hsl(240 10% 4% / 0.08), 0 4px 6px -4px hsl(240 10% 4% / 0.08)',
+			xl: '0 20px 25px -5px hsl(240 10% 4% / 0.08), 0 8px 10px -6px hsl(240 10% 4% / 0.08)',
+			none: 'none'
+		},
   		maxWidth: {
   			'8xl': '88rem'
   		},

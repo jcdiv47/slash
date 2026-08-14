@@ -71,6 +71,24 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Selection is a fill behind dark text, which is the one way the Accent is
+     allowed to touch prose (ADR 0002). */
+  ::selection {
+    background-color: hsl(var(--primary) / 0.35);
+    color: hsl(var(--foreground));
+  }
+}
+
+/* The motion layer is feedback, never content, so it can vanish wholesale for
+   Members who ask the OS for stillness. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 body,

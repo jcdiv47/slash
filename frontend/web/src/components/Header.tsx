@@ -71,7 +71,7 @@ const Header: React.FC = () => {
   // hold the mark, the field and the buttons on one line, so search drops to a
   // row of its own underneath.
   const searchField = (
-    <div className="flex flex-row items-center gap-2 h-8 w-full px-2.5 rounded-md border border-input bg-background">
+    <div className="flex flex-row items-center gap-2 h-8 w-full px-2.5 rounded-md border border-input bg-background transition-shadow duration-150 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
       <Icon.Search className="w-3.5 h-auto shrink-0 text-muted-foreground" />
       <input
         ref={searchRef}
