@@ -2,13 +2,12 @@ package httpgetter
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/pkg/errors"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
@@ -43,7 +42,7 @@ func GetHTMLMetaWithContext(ctx context.Context, urlStr string) (*HTMLMeta, erro
 	}
 	defer response.Body.Close()
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
-		return nil, fmt.Errorf("unexpected HTTP status: %s", response.Status)
+		return nil, errors.Errorf("unexpected HTTP status: %s", response.Status)
 	}
 
 	mediatype, err := getMediatype(response)
