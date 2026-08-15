@@ -15,6 +15,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/yourselfhosted/slash/plugin/httpgetter"
 	v1pb "github.com/yourselfhosted/slash/proto/gen/api/v1"
 	storepb "github.com/yourselfhosted/slash/proto/gen/store"
 	"github.com/yourselfhosted/slash/store"
@@ -91,6 +92,18 @@ func (s *APIV1Service) GetShortcutByName(ctx context.Context, request *v1pb.GetS
 		return nil, status.Errorf(codes.Internal, "failed to convert shortcut, err: %v", err)
 	}
 	return composedShortcut, nil
+}
+
+func (s *APIV1Service) GetLinkMetadata(ctx context.Context, request *v1pb.GetLinkMetadataRequest) (*v1pb.GetLinkMetadataResponse, error) {
+	if strings.TrimSpace(request.Link) == "" {
+		return nil, status.Error(codes.InvalidArgument, "link is required")
+	}
+
+	metadata, err := httpgetter.GetHTMLMetaWithContext(ctx, request.Link)
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, "failed to fetch link metadata: %v", err)
+	}
+	return &v1pb.GetLinkMetadataResponse{Title: strings.TrimSpace(metadata.Title)}, nil
 }
 
 func (s *APIV1Service) CreateShortcut(ctx context.Context, request *v1pb.CreateShortcutRequest) (*v1pb.Shortcut, error) {
@@ -301,7 +314,13 @@ func mapToAnalyticsSlice(m map[string]int32) []*v1pb.GetShortcutAnalyticsRespons
 		})
 	}
 	slices.SortFunc(analyticsSlice, func(i, j *v1pb.GetShortcutAnalyticsResponse_AnalyticsItem) int {
-		return int(i.Count - j.Count)
+		if i.Count != j.Count {
+			if i.Count > j.Count {
+				return -1
+			}
+			return 1
+		}
+		return strings.Compare(i.Name, j.Name)
 	})
 	return analyticsSlice
 }

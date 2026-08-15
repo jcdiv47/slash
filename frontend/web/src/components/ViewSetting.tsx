@@ -3,16 +3,26 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import { useViewStore } from "@/stores";
-import { DisplayStyle, Order } from "@/stores/view";
+import { Density, DisplayStyle, GroupBy, Order } from "@/stores/view";
 import Icon from "./Icon";
 import Dropdown from "./common/Dropdown";
 
-const displayStyleOptions: { value: DisplayStyle; icon: Icon.LucideIcon; labelKey: string }[] = [
-  { value: "full", icon: Icon.LayoutGrid, labelKey: "filter.display-full" },
-  { value: "compact", icon: Icon.Grid3x3, labelKey: "filter.display-compact" },
-  { value: "list", icon: Icon.List, labelKey: "filter.display-list" },
+const displayStyleOptions: { value: DisplayStyle; labelKey: string }[] = [
+  { value: "full", labelKey: "filter.display-full" },
+  { value: "list", labelKey: "filter.display-index" },
+];
+
+const densityOptions: { value: Density; labelKey: string }[] = [
+  { value: "comfortable", labelKey: "filter.density-comfortable" },
+  { value: "compact", labelKey: "filter.density-compact" },
+  { value: "dense", labelKey: "filter.density-dense" },
+];
+
+const groupByOptions: { value: GroupBy; labelKey: string }[] = [
+  { value: "site", labelKey: "filter.group-by-site" },
+  { value: "tag", labelKey: "filter.group-by-tag" },
+  { value: "recency", labelKey: "filter.group-by-recency" },
 ];
 
 const orderFieldOptions: { value: Order["field"]; labelKey: string }[] = [
@@ -22,68 +32,55 @@ const orderFieldOptions: { value: Order["field"]; labelKey: string }[] = [
   { value: "view", labelKey: "filter.order-by-visits" },
 ];
 
+// Ordering is set once and then left alone, so unlike Display Style it stays
+// with the collection it orders rather than moving up into the header. On a
+// phone the header has no room for the Display Style, Density or grouping
+// controls either, so the dropdown below carries all of them.
 const ViewSetting = () => {
   const { t } = useTranslation();
   const viewStore = useViewStore();
   const order = viewStore.getOrder();
   const { field, direction } = order;
   const displayStyle = viewStore.displayStyle || "full";
+  const density = viewStore.density || "comfortable";
+  const groupBy = viewStore.groupBy || "site";
+  const isIndex = displayStyle === "list";
   const directionLabel = t(direction === "asc" ? "filter.direction-asc" : "filter.direction-desc");
 
   const toggleDirection = () => viewStore.setOrder({ direction: direction === "asc" ? "desc" : "asc" });
 
   return (
     <>
-      {/* Wide screens spread the three controls across one row of icons; narrow
-      screens fold them into the dropdown below. Both are always mounted and
-      swapped by CSS, so there is no resize listener to keep in sync. */}
-      <div className="hidden md:flex flex-row justify-end items-center gap-2">
-        <div className="flex flex-row items-center gap-0.5 p-0.5 rounded-md border border-input">
-          {displayStyleOptions.map(({ value, icon: OptionIcon, labelKey }) => (
-            <Tooltip key={value}>
-              <TooltipTrigger asChild>
-                <button
-                  className={cn(
-                    "w-7 h-7 flex justify-center items-center rounded transition-colors",
-                    value === displayStyle
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
-                  )}
-                  aria-label={t(labelKey)}
-                  aria-pressed={value === displayStyle}
-                  onClick={() => viewStore.setDisplayStyle(value)}
-                >
-                  <OptionIcon className="w-4 h-auto" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{t(labelKey)}</TooltipContent>
-            </Tooltip>
-          ))}
+      {/* The index orders itself: groups by weight, Shortcuts by visits within
+          them. Offering an ordering that only the grid obeys would be a control
+          that lies. */}
+      {!isIndex && (
+        <div className="hidden md:flex flex-row justify-end items-center gap-2">
+          <Select value={field} onValueChange={(value) => viewStore.setOrder({ field: value as Order["field"] })}>
+            <SelectTrigger className="w-36 h-8" aria-label={t("filter.order-by")}>
+              <div className="min-w-0 flex flex-row justify-start items-center gap-2">
+                <Icon.ArrowUpDown className="w-4 h-auto shrink-0 text-muted-foreground" />
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {orderFieldOptions.map(({ value, labelKey }) => (
+                <SelectItem key={value} value={value}>
+                  {t(labelKey)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" className="w-8 h-8 px-0" aria-label={directionLabel} onClick={toggleDirection}>
+                {direction === "asc" ? <Icon.ArrowUp /> : <Icon.ArrowDown />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{directionLabel}</TooltipContent>
+          </Tooltip>
         </div>
-        <Select value={field} onValueChange={(value) => viewStore.setOrder({ field: value as Order["field"] })}>
-          <SelectTrigger className="w-36 h-9" aria-label={t("filter.order-by")}>
-            <div className="min-w-0 flex flex-row justify-start items-center gap-2">
-              <Icon.ArrowUpDown className="w-4 h-auto shrink-0 text-muted-foreground" />
-              <SelectValue />
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            {orderFieldOptions.map(({ value, labelKey }) => (
-              <SelectItem key={value} value={value}>
-                {t(labelKey)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" size="sm" className="w-9 px-0" aria-label={directionLabel} onClick={toggleDirection}>
-              {direction === "asc" ? <Icon.ArrowUp /> : <Icon.ArrowDown />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{directionLabel}</TooltipContent>
-        </Tooltip>
-      </div>
+      )}
 
       <Dropdown
         className="md:hidden"
@@ -110,6 +107,39 @@ const ViewSetting = () => {
                 </SelectContent>
               </Select>
             </div>
+            {isIndex ? (
+              <div className="w-full flex flex-row justify-between items-center">
+                <span className="text-sm shrink-0 mr-2">{t("filter.group-by")}</span>
+                <Select value={groupBy} onValueChange={(value) => viewStore.setGroupBy(value as GroupBy)}>
+                  <SelectTrigger className="w-32 h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {groupByOptions.map(({ value, labelKey }) => (
+                      <SelectItem key={value} value={value}>
+                        {t(labelKey)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="w-full flex flex-row justify-between items-center">
+                <span className="text-sm shrink-0 mr-2">{t("filter.density")}</span>
+                <Select value={density} onValueChange={(value) => viewStore.setDensity(value as Density)}>
+                  <SelectTrigger className="w-32 h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {densityOptions.map(({ value, labelKey }) => (
+                      <SelectItem key={value} value={value}>
+                        {t(labelKey)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <Separator className="!my-1" />
             <div className="w-full flex flex-row justify-between items-center">
               <span className="text-sm shrink-0 mr-2">{t("filter.order-by")}</span>

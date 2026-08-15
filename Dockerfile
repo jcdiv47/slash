@@ -1,5 +1,5 @@
 # Build frontend dist.
-FROM node:18-alpine AS frontend
+FROM node:22-alpine AS frontend
 WORKDIR /frontend-build
 
 COPY . .
@@ -30,9 +30,9 @@ COPY --from=backend /backend-build/slash /usr/local/slash/
 
 EXPOSE 5231
 
-# Directory to store the data, which can be referenced as the mounting point.
+# Directory to store the data. Attach a platform volume at /var/opt/slash
+# when persistence is required; Dockerfile VOLUME is unsupported by Railway.
 RUN mkdir -p /var/opt/slash
-VOLUME /var/opt/slash
 
 ENV SLASH_MODE="prod"
 ENV SLASH_PORT="5231"

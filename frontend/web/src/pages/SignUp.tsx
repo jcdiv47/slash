@@ -2,9 +2,11 @@ import React, { FormEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import Icon from "@/components/Icon";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { authServiceClient } from "@/grpcweb";
 import useLoading from "@/hooks/useLoading";
 import useNavigateTo from "@/hooks/useNavigateTo";
@@ -72,57 +74,62 @@ const SignUp: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-row justify-center items-center w-full h-auto pt-12 sm:pt-24 bg-background">
-      <div className="w-80 max-w-full h-full py-4 flex flex-col justify-start items-center">
-        <div className="w-full py-4 grow flex flex-col justify-center items-center">
-          <div className="flex flex-row justify-start items-center w-auto mx-auto gap-y-2 mb-4">
-            <Logo className="mr-2" />
-            <span className="text-3xl text-foreground opacity-80">Slash</span>
-          </div>
-          <p className="w-full text-2xl mt-6 text-foreground">{t("auth.create-your-account")}</p>
-          <form className="w-full mt-4" onSubmit={handleSignupBtnClick}>
-            <div className={`flex flex-col justify-start items-start w-full ${actionBtnLoadingState.isLoading ? "opacity-80" : ""}`}>
-              <div className="w-full flex flex-col mb-2">
-                <span className="leading-8 mb-1 text-muted-foreground">{t("common.email")}</span>
-                <Input
-                  className="w-full py-3"
-                  type="email"
-                  value={email}
-                  placeholder="slash@yourselfhosted.com"
-                  onChange={handleEmailInputChanged}
-                />
-              </div>
-              <div className="w-full flex flex-col mb-2">
-                <span className="leading-8 text-muted-foreground">Nickname</span>
-                <Input className="w-full py-3" type="text" value={nickname} placeholder="slash" onChange={handleNicknameInputChanged} />
-              </div>
-              <div className="w-full flex flex-col mb-2">
-                <span className="leading-8 text-muted-foreground">{t("common.password")}</span>
-                <Input className="w-full py-3" type="password" value={password} placeholder="····" onChange={handlePasswordInputChanged} />
-              </div>
-            </div>
-            <div className="w-full flex flex-row justify-end items-center mt-4 space-x-2">
-              <Button
-                className="w-full"
-                type="submit"
-                disabled={actionBtnLoadingState.isLoading || !allowConfirm}
-                onClick={handleSignupBtnClick}
-              >
-                {actionBtnLoadingState.isLoading ? "Loading..." : t("auth.sign-up")}
-              </Button>
-            </div>
-          </form>
-          {!workspaceStore.profile.owner ? (
-            <p className="w-full mt-4 text-sm font-medium text-muted-foreground">{t("auth.host-tip")}</p>
-          ) : (
-            <p className="w-full mt-4 text-sm">
-              <span className="text-muted-foreground">{"Already has an account?"}</span>
-              <Link className="cursor-pointer ml-2 font-medium text-foreground hover:underline" to="/auth" viewTransition>
-                {t("auth.sign-in")}
-              </Link>
-            </p>
-          )}
+    <div className="w-full min-h-[100dvh] px-4 flex flex-col justify-center items-center bg-background">
+      {/* pb pushes the block optically above centre; mathematically centred reads low. */}
+      <div className="w-80 max-w-full pb-16 flex flex-col items-stretch">
+        <div className="mb-6 flex flex-row justify-center items-center text-foreground">
+          <Logo className="!w-6 mr-2" />
+          <span className="text-xl font-medium tracking-tight">Slash</span>
         </div>
+        <p className="mb-5 text-sm text-center text-muted-foreground">{t("auth.create-your-account")}</p>
+        <form className="w-full flex flex-col gap-4" onSubmit={handleSignupBtnClick}>
+          <div className="w-full flex flex-col gap-1.5">
+            <Label htmlFor="signup-email">{t("common.email")}</Label>
+            <Input
+              id="signup-email"
+              type="email"
+              value={email}
+              placeholder="slash@yourselfhosted.com"
+              autoComplete="email"
+              onChange={handleEmailInputChanged}
+            />
+          </div>
+          <div className="w-full flex flex-col gap-1.5">
+            <Label htmlFor="signup-nickname">Nickname</Label>
+            <Input
+              id="signup-nickname"
+              type="text"
+              value={nickname}
+              placeholder="slash"
+              autoComplete="nickname"
+              onChange={handleNicknameInputChanged}
+            />
+          </div>
+          <div className="w-full flex flex-col gap-1.5">
+            <Label htmlFor="signup-password">{t("common.password")}</Label>
+            <Input
+              id="signup-password"
+              type="password"
+              value={password}
+              autoComplete="new-password"
+              onChange={handlePasswordInputChanged}
+            />
+          </div>
+          <Button className="w-full mt-1" type="submit" disabled={actionBtnLoadingState.isLoading || !allowConfirm}>
+            {actionBtnLoadingState.isLoading && <Icon.LoaderCircle className="animate-spin" />}
+            {t("auth.sign-up")}
+          </Button>
+        </form>
+        {!workspaceStore.profile.owner ? (
+          <p className="mt-4 text-sm text-center font-medium text-muted-foreground">{t("auth.host-tip")}</p>
+        ) : (
+          <p className="mt-4 text-sm text-center">
+            <span className="text-muted-foreground">{"Already have an account?"}</span>
+            <Link className="cursor-pointer ml-2 font-medium text-foreground hover:underline" to="/auth" viewTransition>
+              {t("auth.sign-in")}
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

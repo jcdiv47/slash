@@ -23,6 +23,7 @@ const (
 	ShortcutService_ListShortcuts_FullMethodName        = "/slash.api.v1.ShortcutService/ListShortcuts"
 	ShortcutService_GetShortcut_FullMethodName          = "/slash.api.v1.ShortcutService/GetShortcut"
 	ShortcutService_GetShortcutByName_FullMethodName    = "/slash.api.v1.ShortcutService/GetShortcutByName"
+	ShortcutService_GetLinkMetadata_FullMethodName      = "/slash.api.v1.ShortcutService/GetLinkMetadata"
 	ShortcutService_CreateShortcut_FullMethodName       = "/slash.api.v1.ShortcutService/CreateShortcut"
 	ShortcutService_UpdateShortcut_FullMethodName       = "/slash.api.v1.ShortcutService/UpdateShortcut"
 	ShortcutService_DeleteShortcut_FullMethodName       = "/slash.api.v1.ShortcutService/DeleteShortcut"
@@ -39,6 +40,8 @@ type ShortcutServiceClient interface {
 	GetShortcut(ctx context.Context, in *GetShortcutRequest, opts ...grpc.CallOption) (*Shortcut, error)
 	// GetShortcutByName returns a shortcut by name.
 	GetShortcutByName(ctx context.Context, in *GetShortcutByNameRequest, opts ...grpc.CallOption) (*Shortcut, error)
+	// GetLinkMetadata fetches metadata from a link.
+	GetLinkMetadata(ctx context.Context, in *GetLinkMetadataRequest, opts ...grpc.CallOption) (*GetLinkMetadataResponse, error)
 	// CreateShortcut creates a shortcut.
 	CreateShortcut(ctx context.Context, in *CreateShortcutRequest, opts ...grpc.CallOption) (*Shortcut, error)
 	// UpdateShortcut updates a shortcut.
@@ -81,6 +84,16 @@ func (c *shortcutServiceClient) GetShortcutByName(ctx context.Context, in *GetSh
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Shortcut)
 	err := c.cc.Invoke(ctx, ShortcutService_GetShortcutByName_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shortcutServiceClient) GetLinkMetadata(ctx context.Context, in *GetLinkMetadataRequest, opts ...grpc.CallOption) (*GetLinkMetadataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLinkMetadataResponse)
+	err := c.cc.Invoke(ctx, ShortcutService_GetLinkMetadata_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -137,6 +150,8 @@ type ShortcutServiceServer interface {
 	GetShortcut(context.Context, *GetShortcutRequest) (*Shortcut, error)
 	// GetShortcutByName returns a shortcut by name.
 	GetShortcutByName(context.Context, *GetShortcutByNameRequest) (*Shortcut, error)
+	// GetLinkMetadata fetches metadata from a link.
+	GetLinkMetadata(context.Context, *GetLinkMetadataRequest) (*GetLinkMetadataResponse, error)
 	// CreateShortcut creates a shortcut.
 	CreateShortcut(context.Context, *CreateShortcutRequest) (*Shortcut, error)
 	// UpdateShortcut updates a shortcut.
@@ -163,6 +178,9 @@ func (UnimplementedShortcutServiceServer) GetShortcut(context.Context, *GetShort
 }
 func (UnimplementedShortcutServiceServer) GetShortcutByName(context.Context, *GetShortcutByNameRequest) (*Shortcut, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetShortcutByName not implemented")
+}
+func (UnimplementedShortcutServiceServer) GetLinkMetadata(context.Context, *GetLinkMetadataRequest) (*GetLinkMetadataResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLinkMetadata not implemented")
 }
 func (UnimplementedShortcutServiceServer) CreateShortcut(context.Context, *CreateShortcutRequest) (*Shortcut, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateShortcut not implemented")
@@ -247,6 +265,24 @@ func _ShortcutService_GetShortcutByName_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ShortcutServiceServer).GetShortcutByName(ctx, req.(*GetShortcutByNameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShortcutService_GetLinkMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLinkMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShortcutServiceServer).GetLinkMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ShortcutService_GetLinkMetadata_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShortcutServiceServer).GetLinkMetadata(ctx, req.(*GetLinkMetadataRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -341,6 +377,10 @@ var ShortcutService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetShortcutByName",
 			Handler:    _ShortcutService_GetShortcutByName_Handler,
+		},
+		{
+			MethodName: "GetLinkMetadata",
+			Handler:    _ShortcutService_GetLinkMetadata_Handler,
 		},
 		{
 			MethodName: "CreateShortcut",

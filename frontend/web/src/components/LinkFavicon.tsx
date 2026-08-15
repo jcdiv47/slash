@@ -5,6 +5,8 @@ interface Props {
   url: string;
 }
 
+const faviconProvider = "https://www.google.com/s2/favicons";
+
 const getFaviconUrlWithProvider = (url: string, provider: string) => {
   try {
     const searchParams = new URLSearchParams();
@@ -16,19 +18,26 @@ const getFaviconUrlWithProvider = (url: string, provider: string) => {
   }
 };
 
-const LinkFavicon = (props: Props) => {
-  const { url } = props;
-  const faviconProvider = "https://www.google.com/s2/favicons";
-  const [faviconUrl, setFaviconUrl] = useState<string>(getFaviconUrlWithProvider(url, faviconProvider));
+const LinkFavicon = ({ url }: Props) => {
+  const faviconUrl = getFaviconUrlWithProvider(url, faviconProvider);
+  // Which Links have failed, rather than whether the current one has: the same
+  // instance is reused while a Link is being typed, so a single boolean would
+  // stay stuck on the first host that had no icon.
+  const [failedUrls, setFailedUrls] = useState<string[]>([]);
 
-  const handleImgError = () => {
-    setFaviconUrl("");
-  };
+  if (!faviconUrl || failedUrls.includes(faviconUrl)) {
+    return <Icon.CircleSlash className="w-full h-auto text-muted-foreground" strokeWidth={1.5} />;
+  }
 
-  return faviconUrl ? (
-    <img className="w-full h-auto rounded" src={faviconUrl} decoding="async" loading="lazy" onError={handleImgError} />
-  ) : (
-    <Icon.CircleSlash className="w-full h-auto text-muted-foreground" strokeWidth={1.5} />
+  return (
+    <img
+      key={faviconUrl}
+      className="w-full h-auto rounded"
+      src={faviconUrl}
+      decoding="async"
+      loading="lazy"
+      onError={() => setFailedUrls((urls) => urls.concat(faviconUrl))}
+    />
   );
 };
 
