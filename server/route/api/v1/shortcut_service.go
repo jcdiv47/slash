@@ -94,7 +94,7 @@ func (s *APIV1Service) GetShortcutByName(ctx context.Context, request *v1pb.GetS
 	return composedShortcut, nil
 }
 
-func (s *APIV1Service) GetLinkMetadata(ctx context.Context, request *v1pb.GetLinkMetadataRequest) (*v1pb.GetLinkMetadataResponse, error) {
+func (*APIV1Service) GetLinkMetadata(ctx context.Context, request *v1pb.GetLinkMetadataRequest) (*v1pb.GetLinkMetadataResponse, error) {
 	if strings.TrimSpace(request.Link) == "" {
 		return nil, status.Error(codes.InvalidArgument, "link is required")
 	}
