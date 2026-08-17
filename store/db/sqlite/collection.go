@@ -97,6 +97,10 @@ func (d *DB) UpdateCollection(ctx context.Context, update *store.UpdateCollectio
 }
 
 func (d *DB) ListCollections(ctx context.Context, find *store.FindCollection) ([]*storepb.Collection, error) {
+	return listCollections(ctx, d.db, find)
+}
+
+func listCollections(ctx context.Context, q queryer, find *store.FindCollection) ([]*storepb.Collection, error) {
 	where, args := []string{"1 = 1"}, []any{}
 	if v := find.ID; v != nil {
 		where, args = append(where, "id = ?"), append(args, *v)
@@ -116,7 +120,7 @@ func (d *DB) ListCollections(ctx context.Context, find *store.FindCollection) ([
 		where = append(where, fmt.Sprintf("visibility in (%s)", strings.Join(list, ",")))
 	}
 
-	rows, err := d.db.QueryContext(ctx, `
+	rows, err := q.QueryContext(ctx, `
 		SELECT
 			id,
 			creator_id,

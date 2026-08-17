@@ -53,6 +53,11 @@ _Avoid_: Custom logo, white-label, theme
 A person with an account in the Workspace.
 _Avoid_: User, account, teammate
 
+**Activity**:
+A record that something happened in the Workspace — chiefly that a Shortcut was
+viewed. Activities are the sole source of analytics.
+_Avoid_: Event, log entry, hit
+
 ### Presentation
 
 **Display Style**:
@@ -88,3 +93,33 @@ The single brand hue (amber). It carries identity only and never state — it is
 not a warning colour. See
 [ADR 0002](./docs/adr/0002-accent-may-fill-never-letter.md).
 _Avoid_: Primary colour, brand colour, highlight
+
+### Backup
+
+**Backup**:
+A single file holding every row of the Workspace at one point in time, portable
+between storage engines. See
+[ADR 0003](./docs/adr/0003-logical-domain-level-backups.md).
+_Avoid_: Dump, snapshot, archive
+
+**Manifest**:
+The self-describing header of a Backup, stating what the file contains and which
+version of Slash produced it. A Restore holds the file to this account of itself:
+the Manifest must declare every table but Activity, and the file may carry
+records only for what the Manifest declares.
+_Avoid_: Metadata, header
+
+**Export**:
+Producing a Backup from a running Workspace.
+_Avoid_: Download, dump
+
+**Restore**:
+Loading a Backup into an Empty Instance, replacing its contents wholesale. Slash
+has no notion of importing a Backup into a populated Workspace. See
+[ADR 0004](./docs/adr/0004-restore-is-replace-all-into-an-empty-instance.md).
+_Avoid_: Import, merge, sync
+
+**Empty Instance**:
+A Workspace with no Shortcuts, no Collections, and at most one Member — the state
+a Restore requires of its target.
+_Avoid_: Fresh install, clean instance

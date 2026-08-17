@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	storepb "github.com/yourselfhosted/slash/proto/gen/store"
 	"github.com/yourselfhosted/slash/store"
@@ -21,21 +22,9 @@ func (d *DB) UpsertUserSetting(ctx context.Context, upsert *storepb.UserSetting)
 		ON CONFLICT(user_id, key) DO UPDATE 
 		SET value = EXCLUDED.value
 	`
-	var valueString string
-	if upsert.Key == storepb.UserSettingKey_USER_SETTING_ACCESS_TOKENS {
-		valueBytes, err := protojson.Marshal(upsert.GetAccessTokens())
-		if err != nil {
-			return nil, err
-		}
-		valueString = string(valueBytes)
-	} else if upsert.Key == storepb.UserSettingKey_USER_SETTING_GENERAL {
-		valueBytes, err := protojson.Marshal(upsert.GetGeneral())
-		if err != nil {
-			return nil, err
-		}
-		valueString = string(valueBytes)
-	} else {
-		return nil, errors.New("invalid user setting key")
+	valueString, err := marshalUserSettingValue(upsert)
+	if err != nil {
+		return nil, err
 	}
 
 	if _, err := d.db.ExecContext(ctx, stmt, upsert.UserId, upsert.Key.String(), valueString); err != nil {
@@ -47,6 +36,10 @@ func (d *DB) UpsertUserSetting(ctx context.Context, upsert *storepb.UserSetting)
 }
 
 func (d *DB) ListUserSettings(ctx context.Context, find *store.FindUserSetting) ([]*storepb.UserSetting, error) {
+	return listUserSettings(ctx, d.db, find)
+}
+
+func listUserSettings(ctx context.Context, q queryer, find *store.FindUserSetting) ([]*storepb.UserSetting, error) {
 	where, args := []string{"1 = 1"}, []any{}
 
 	if v := find.Key; v != storepb.UserSettingKey_USER_SETTING_KEY_UNSPECIFIED {
@@ -63,7 +56,7 @@ func (d *DB) ListUserSettings(ctx context.Context, find *store.FindUserSetting) 
 			value
 		FROM user_setting
 		WHERE ` + strings.Join(where, " AND ")
-	rows, err := d.db.QueryContext(ctx, query, args...)
+	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,4 +112,23 @@ func vacuumUserSetting(ctx context.Context, tx *sql.Tx) error {
 	}
 
 	return nil
+}
+
+// marshalUserSettingValue renders the value column for a user setting. Shared
+// with the restore path so the two cannot drift apart as keys are added.
+func marshalUserSettingValue(setting *storepb.UserSetting) (string, error) {
+	var message proto.Message
+	switch setting.Key {
+	case storepb.UserSettingKey_USER_SETTING_ACCESS_TOKENS:
+		message = setting.GetAccessTokens()
+	case storepb.UserSettingKey_USER_SETTING_GENERAL:
+		message = setting.GetGeneral()
+	default:
+		return "", errors.New("invalid user setting key")
+	}
+	valueBytes, err := protojson.Marshal(message)
+	if err != nil {
+		return "", err
+	}
+	return string(valueBytes), nil
 }

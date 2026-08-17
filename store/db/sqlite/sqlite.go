@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/pkg/errors"
@@ -15,6 +16,10 @@ type DB struct {
 	db      *sql.DB
 	profile *profile.Profile
 }
+
+// connectionParams are the query parameters every connection to the database
+// carries. See NewDB for what each one buys.
+const connectionParams = "?_pragma=foreign_keys(0)&_pragma=busy_timeout(10000)&_pragma=journal_mode(WAL)"
 
 // NewDB opens a database specified by its database driver name and a
 // driver-specific data source name, usually consisting of at least a
@@ -39,7 +44,7 @@ func NewDB(profile *profile.Profile) (store.Driver, error) {
 	// - https://pkg.go.dev/modernc.org/sqlite#Driver.Open
 	// - https://www.sqlite.org/sharedcache.html
 	// - https://www.sqlite.org/pragma.html
-	sqliteDB, err := sql.Open("sqlite", profile.DSN+"?_pragma=foreign_keys(0)&_pragma=busy_timeout(10000)&_pragma=journal_mode(WAL)")
+	sqliteDB, err := sql.Open("sqlite", profile.DSN+connectionParams)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to open db with dsn: %s", profile.DSN)
 	}
@@ -47,6 +52,12 @@ func NewDB(profile *profile.Profile) (store.Driver, error) {
 	driver := DB{db: sqliteDB, profile: profile}
 
 	return &driver, nil
+}
+
+// queryer is the read half shared by *sql.DB and *sql.Tx, so the list helpers
+// below can serve both an ordinary request and an export snapshot.
+type queryer interface {
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 }
 
 func (d *DB) GetDB() *sql.DB {

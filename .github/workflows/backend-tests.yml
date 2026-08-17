@@ -42,3 +42,42 @@ jobs:
         run: go test -v ./... | tee test.log; exit ${PIPESTATUS[0]}
       - name: Pretty print tests running time
         run: grep --color=never -e '--- PASS:' -e '--- FAIL:' test.log | sed 's/[:()]//g' | awk '{print $2,$3,$4}' | sort -t' ' -nk3 -r | awk '{sum += $3; print $1,$2,$3,sum"s"}'
+
+  # Backups must move a workspace between the two storage engines, so the store
+  # and backup suites run against Postgres as well as SQLite, and the backup
+  # suite additionally restores across the two in both directions.
+  # See docs/adr/0003-logical-domain-level-backups.md.
+  go-tests-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: slash
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      POSTGRES_DSN: postgresql://postgres:postgres@localhost:5432/slash?sslmode=disable
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.23
+          check-latest: true
+          cache: true
+      - name: Run store and backup tests against Postgres
+        env:
+          DRIVER: postgres
+          DSN: postgresql://postgres:postgres@localhost:5432/slash?sslmode=disable
+        # -p 1: both suites reset and reseed the one Postgres database named by
+        # DSN, so they cannot run as parallel packages the way they can on
+        # SQLite, where each test gets its own file.
+        run: go test -v -p 1 ./store/... ./server/service/backup/...
+      - name: Run cross-driver restore tests
+        run: go test -v -run TestCrossDriver ./server/service/backup/...

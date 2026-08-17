@@ -1,0 +1,302 @@
+package v1
+
+import (
+	"bufio"
+	"bytes"
+	"compress/gzip"
+	"context"
+	"encoding/json"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/require"
+
+	storepb "github.com/yourselfhosted/slash/proto/gen/store"
+	"github.com/yourselfhosted/slash/server/profile"
+	"github.com/yourselfhosted/slash/server/service/backup"
+	"github.com/yourselfhosted/slash/store"
+	teststore "github.com/yourselfhosted/slash/store/test"
+)
+
+const testSecret = "test-secret"
+
+// incompleteBackup is a well-formed gzip carrying a manifest that never mentions
+// the shortcut table — the shape a hand-edited or partially written file takes,
+// and the one an operator most needs a clear answer about.
+func incompleteBackup(t *testing.T) []byte {
+	t.Helper()
+
+	manifest := &backup.Manifest{
+		Format: backup.FormatVersion,
+		Tables: []string{backup.TableUser, backup.TableUserSetting, backup.TableWorkspaceSetting},
+	}
+	var plain bytes.Buffer
+	require.NoError(t, json.NewEncoder(&plain).Encode(manifest))
+
+	var compressed bytes.Buffer
+	gzipWriter := gzip.NewWriter(&compressed)
+	_, err := gzipWriter.Write(plain.Bytes())
+	require.NoError(t, err)
+	require.NoError(t, gzipWriter.Close())
+	return compressed.Bytes()
+}
+
+// signIn creates a user of the given role and returns a usable access token,
+// registering it the way the auth service does so the interceptor accepts it.
+func signIn(t *testing.T, ts *store.Store, email string, role store.Role) string {
+	t.Helper()
+	ctx := context.Background()
+
+	user, err := ts.CreateUser(ctx, &store.User{
+		Email:        email,
+		Nickname:     email,
+		PasswordHash: "irrelevant",
+		Role:         role,
+	})
+	require.NoError(t, err)
+
+	token, err := GenerateAccessToken(user.Email, user.ID, time.Now().Add(time.Hour), []byte(testSecret))
+	require.NoError(t, err)
+
+	// authenticate() checks the token against the user's stored tokens, so a
+	// merely well-signed JWT is not enough.
+	_, err = ts.UpsertUserSetting(ctx, &storepb.UserSetting{
+		UserId: user.ID,
+		Key:    storepb.UserSettingKey_USER_SETTING_ACCESS_TOKENS,
+		Value: &storepb.UserSetting_AccessTokens{
+			AccessTokens: &storepb.UserSetting_AccessTokensSetting{
+				AccessTokens: []*storepb.UserSetting_AccessTokensSetting_AccessToken{
+					{AccessToken: token, Description: "test"},
+				},
+			},
+		},
+	})
+	require.NoError(t, err)
+
+	return token
+}
+
+func newBackupTestServer(t *testing.T, ts *store.Store) *echo.Echo {
+	t.Helper()
+	e := echo.New()
+	service := &APIV1Service{
+		Secret:       testSecret,
+		Profile:      &profile.Profile{Mode: "prod"},
+		Store:        ts,
+		authProvider: NewGRPCAuthInterceptor(ts, testSecret),
+	}
+	service.RegisterBackupRoutes(e)
+	return e
+}
+
+func exportWithToken(t *testing.T, e *echo.Echo, token string) *httptest.ResponseRecorder {
+	t.Helper()
+	return exportWithQuery(t, e, token, "")
+}
+
+func exportWithQuery(t *testing.T, e *echo.Echo, token, query string) *httptest.ResponseRecorder {
+	t.Helper()
+	target := BackupExportPath
+	if query != "" {
+		target += "?" + query
+	}
+	request := httptest.NewRequest(http.MethodGet, target, nil)
+	if token != "" {
+		request.AddCookie(&http.Cookie{Name: AccessTokenCookieName, Value: token})
+	}
+	recorder := httptest.NewRecorder()
+	e.ServeHTTP(recorder, request)
+	return recorder
+}
+
+// exportedTables reads back the manifest of a downloaded backup.
+func exportedTables(t *testing.T, body []byte) []string {
+	t.Helper()
+	gzipReader, err := gzip.NewReader(bytes.NewReader(body))
+	require.NoError(t, err)
+	defer gzipReader.Close()
+
+	scanner := bufio.NewScanner(gzipReader)
+	require.True(t, scanner.Scan(), "backup has no manifest line")
+	manifest := &backup.Manifest{}
+	require.NoError(t, json.Unmarshal(scanner.Bytes(), manifest))
+	return manifest.Tables
+}
+
+// TestExportBackupExcludesActivitiesByDefault pins the privacy default at the
+// HTTP boundary: activity records carry visitor IP addresses, so a plain export
+// must leave them out and only the explicit opt-in may hand them over. See
+// docs/adr/0003-logical-domain-level-backups.md.
+func TestExportBackupExcludesActivitiesByDefault(t *testing.T) {
+	ctx := context.Background()
+	ts := teststore.NewTestingStore(ctx, t)
+	e := newBackupTestServer(t, ts)
+	adminToken := signIn(t, ts, "admin@slash.com", store.RoleAdmin)
+
+	_, err := ts.CreateActivity(ctx, &store.Activity{
+		CreatorID: 1,
+		CreatedTs: time.Now().Unix(),
+		Type:      store.ActivityShortcutView,
+		Level:     store.ActivityInfo,
+		Payload:   `{"shortcutId":1,"ip":"203.0.113.7"}`,
+	})
+	require.NoError(t, err)
+
+	t.Run("default export omits activity", func(t *testing.T) {
+		recorder := exportWithQuery(t, e, adminToken, "")
+		require.Equal(t, http.StatusOK, recorder.Code)
+		tables := exportedTables(t, recorder.Body.Bytes())
+		require.NotContains(t, tables, backup.TableActivity)
+		require.NotContains(t, recorder.Body.String(), "203.0.113.7")
+	})
+
+	t.Run("opting in includes activity", func(t *testing.T) {
+		recorder := exportWithQuery(t, e, adminToken, "activities=true")
+		require.Equal(t, http.StatusOK, recorder.Code)
+		require.Contains(t, exportedTables(t, recorder.Body.Bytes()), backup.TableActivity)
+	})
+
+	t.Run("any other value is not an opt-in", func(t *testing.T) {
+		for _, query := range []string{"activities=1", "activities=yes", "activities=TRUE", "activities="} {
+			recorder := exportWithQuery(t, e, adminToken, query)
+			require.Equal(t, http.StatusOK, recorder.Code)
+			require.NotContains(t, exportedTables(t, recorder.Body.Bytes()), backup.TableActivity, "query %q", query)
+		}
+	})
+}
+
+// TestExportBackupRequiresAdmin is the security boundary for this endpoint: a
+// backup hands out every password hash and access token in the Workspace.
+func TestExportBackupRequiresAdmin(t *testing.T) {
+	ctx := context.Background()
+	ts := teststore.NewTestingStore(ctx, t)
+	e := newBackupTestServer(t, ts)
+
+	adminToken := signIn(t, ts, "admin@slash.com", store.RoleAdmin)
+	memberToken := signIn(t, ts, "member@slash.com", store.RoleUser)
+
+	t.Run("admin may export", func(t *testing.T) {
+		recorder := exportWithToken(t, e, adminToken)
+		require.Equal(t, http.StatusOK, recorder.Code)
+		require.Equal(t, "application/gzip", recorder.Header().Get(echo.HeaderContentType))
+		require.Contains(t, recorder.Header().Get(echo.HeaderContentDisposition), ".ndjson.gz")
+		require.NotEmpty(t, recorder.Body.Bytes())
+	})
+
+	t.Run("member may not export", func(t *testing.T) {
+		recorder := exportWithToken(t, e, memberToken)
+		require.Equal(t, http.StatusForbidden, recorder.Code)
+		require.NotContains(t, recorder.Body.String(), "ndjson")
+	})
+
+	t.Run("anonymous may not export", func(t *testing.T) {
+		recorder := exportWithToken(t, e, "")
+		require.Equal(t, http.StatusUnauthorized, recorder.Code)
+	})
+
+	t.Run("garbage token may not export", func(t *testing.T) {
+		recorder := exportWithToken(t, e, "not-a-jwt")
+		require.Equal(t, http.StatusUnauthorized, recorder.Code)
+	})
+}
+
+// uploadBackup posts a backup file to the restore endpoint as multipart form data.
+func uploadBackup(t *testing.T, e *echo.Echo, token string, content []byte) *httptest.ResponseRecorder {
+	t.Helper()
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	part, err := writer.CreateFormFile("backup", "backup.ndjson.gz")
+	require.NoError(t, err)
+	_, err = part.Write(content)
+	require.NoError(t, err)
+	require.NoError(t, writer.Close())
+
+	request := httptest.NewRequest(http.MethodPost, BackupRestorePath, &body)
+	request.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
+	if token != "" {
+		request.AddCookie(&http.Cookie{Name: AccessTokenCookieName, Value: token})
+	}
+	recorder := httptest.NewRecorder()
+	e.ServeHTTP(recorder, request)
+	return recorder
+}
+
+// TestRestoreBackupEndpoint covers the round trip through HTTP, plus the status
+// codes an operator mistake should produce.
+func TestRestoreBackupEndpoint(t *testing.T) {
+	ctx := context.Background()
+
+	// Produce a real backup from a populated instance.
+	source := teststore.NewTestingStore(ctx, t)
+	sourceAdmin := signIn(t, source, "admin@slash.com", store.RoleAdmin)
+	sourceEcho := newBackupTestServer(t, source)
+	exported := exportWithToken(t, sourceEcho, sourceAdmin).Body.Bytes()
+	require.NotEmpty(t, exported)
+
+	t.Run("anonymous may not restore", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		recorder := uploadBackup(t, newBackupTestServer(t, target), "", exported)
+		require.Equal(t, http.StatusUnauthorized, recorder.Code)
+	})
+
+	t.Run("member may not restore", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		memberToken := signIn(t, target, "member@slash.com", store.RoleUser)
+		recorder := uploadBackup(t, newBackupTestServer(t, target), memberToken, exported)
+		require.Equal(t, http.StatusForbidden, recorder.Code)
+	})
+
+	t.Run("non-empty instance is a conflict", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		adminToken := signIn(t, target, "admin@slash.com", store.RoleAdmin)
+		_, err := target.CreateShortcut(ctx, &storepb.Shortcut{
+			CreatorId: 1, Name: "existing", Link: "https://example.com", Visibility: storepb.Visibility_WORKSPACE,
+		})
+		require.NoError(t, err)
+
+		recorder := uploadBackup(t, newBackupTestServer(t, target), adminToken, exported)
+		require.Equal(t, http.StatusConflict, recorder.Code)
+	})
+
+	t.Run("garbage upload is a bad request", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		adminToken := signIn(t, target, "admin@slash.com", store.RoleAdmin)
+		recorder := uploadBackup(t, newBackupTestServer(t, target), adminToken, []byte("not a backup"))
+		require.Equal(t, http.StatusBadRequest, recorder.Code)
+	})
+
+	t.Run("incomplete backup is a bad request that says what is wrong", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		adminToken := signIn(t, target, "admin@slash.com", store.RoleAdmin)
+
+		recorder := uploadBackup(t, newBackupTestServer(t, target), adminToken, incompleteBackup(t))
+		require.Equal(t, http.StatusBadRequest, recorder.Code)
+		require.Contains(t, recorder.Body.String(), "shortcut", "the operator should be told which table is missing")
+
+		// And the admin who tried is still there.
+		users, err := target.ListUsers(ctx, &store.FindUser{})
+		require.NoError(t, err)
+		require.Len(t, users, 1)
+	})
+
+	t.Run("admin restores onto a fresh instance", func(t *testing.T) {
+		target := teststore.NewTestingStore(ctx, t)
+		adminToken := signIn(t, target, "installer@slash.com", store.RoleAdmin)
+
+		recorder := uploadBackup(t, newBackupTestServer(t, target), adminToken, exported)
+		require.Equal(t, http.StatusOK, recorder.Code)
+		require.Contains(t, recorder.Body.String(), "restartRequired")
+		require.Contains(t, recorder.Body.String(), "Restart this Slash instance")
+
+		// The installing admin has been replaced by the backup's own user.
+		users, err := target.ListUsers(ctx, &store.FindUser{})
+		require.NoError(t, err)
+		require.Len(t, users, 1)
+		require.Equal(t, "admin@slash.com", users[0].Email)
+	})
+}

@@ -6,7 +6,11 @@ import { UserServiceDefinition } from "./types/proto/api/v1/user_service";
 import { UserSettingServiceDefinition } from "./types/proto/api/v1/user_setting_service";
 import { WorkspaceServiceDefinition } from "./types/proto/api/v1/workspace_service";
 
-const address = import.meta.env.MODE === "development" ? "http://localhost:8082" : window.location.origin;
+// Also used by plain HTTP endpoints that sit outside the gRPC surface, such as
+// the backup download.
+export const serverAddress = import.meta.env.MODE === "development" ? "http://localhost:8082" : window.location.origin;
+
+const address = serverAddress;
 
 const channel = createChannel(
   address,

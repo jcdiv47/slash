@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	storepb "github.com/yourselfhosted/slash/proto/gen/store"
 	"github.com/yourselfhosted/slash/store"
@@ -22,33 +23,9 @@ func (d *DB) UpsertWorkspaceSetting(ctx context.Context, upsert *storepb.Workspa
 		ON CONFLICT(key) DO UPDATE 
 		SET value = EXCLUDED.value
 	`
-	var valueString string
-	if upsert.Key == storepb.WorkspaceSettingKey_WORKSPACE_SETTING_GENERAL {
-		valueBytes, err := protojson.Marshal(upsert.GetGeneral())
-		if err != nil {
-			return nil, err
-		}
-		valueString = string(valueBytes)
-	} else if upsert.Key == storepb.WorkspaceSettingKey_WORKSPACE_SETTING_SECURITY {
-		valueBytes, err := protojson.Marshal(upsert.GetSecurity())
-		if err != nil {
-			return nil, err
-		}
-		valueString = string(valueBytes)
-	} else if upsert.Key == storepb.WorkspaceSettingKey_WORKSPACE_SETTING_SHORTCUT_RELATED {
-		valueBytes, err := protojson.Marshal(upsert.GetShortcutRelated())
-		if err != nil {
-			return nil, err
-		}
-		valueString = string(valueBytes)
-	} else if upsert.Key == storepb.WorkspaceSettingKey_WORKSPACE_SETTING_IDENTITY_PROVIDER {
-		valueBytes, err := protojson.Marshal(upsert.GetIdentityProvider())
-		if err != nil {
-			return nil, err
-		}
-		valueString = string(valueBytes)
-	} else {
-		return nil, errors.New("invalid workspace setting key")
+	valueString, err := marshalWorkspaceSettingValue(upsert)
+	if err != nil {
+		return nil, err
 	}
 
 	if _, err := d.db.ExecContext(ctx, stmt, upsert.Key.String(), valueString); err != nil {
@@ -60,6 +37,10 @@ func (d *DB) UpsertWorkspaceSetting(ctx context.Context, upsert *storepb.Workspa
 }
 
 func (d *DB) ListWorkspaceSettings(ctx context.Context, find *store.FindWorkspaceSetting) ([]*storepb.WorkspaceSetting, error) {
+	return listWorkspaceSettings(ctx, d.db, find)
+}
+
+func listWorkspaceSettings(ctx context.Context, q queryer, find *store.FindWorkspaceSetting) ([]*storepb.WorkspaceSetting, error) {
 	where, args := []string{"1 = 1"}, []interface{}{}
 
 	if find.Key != storepb.WorkspaceSettingKey_WORKSPACE_SETTING_KEY_UNSPECIFIED {
@@ -72,7 +53,7 @@ func (d *DB) ListWorkspaceSettings(ctx context.Context, find *store.FindWorkspac
 			value
 		FROM workspace_setting
 		WHERE ` + strings.Join(where, " AND ")
-	rows, err := d.db.QueryContext(ctx, query, args...)
+	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -149,4 +130,27 @@ func (d *DB) DeleteWorkspaceSetting(ctx context.Context, key storepb.WorkspaceSe
 		return err
 	}
 	return nil
+}
+
+// marshalWorkspaceSettingValue renders the value column for a workspace setting.
+// Shared with the restore path so the two cannot drift apart as keys are added.
+func marshalWorkspaceSettingValue(setting *storepb.WorkspaceSetting) (string, error) {
+	var message proto.Message
+	switch setting.Key {
+	case storepb.WorkspaceSettingKey_WORKSPACE_SETTING_GENERAL:
+		message = setting.GetGeneral()
+	case storepb.WorkspaceSettingKey_WORKSPACE_SETTING_SECURITY:
+		message = setting.GetSecurity()
+	case storepb.WorkspaceSettingKey_WORKSPACE_SETTING_SHORTCUT_RELATED:
+		message = setting.GetShortcutRelated()
+	case storepb.WorkspaceSettingKey_WORKSPACE_SETTING_IDENTITY_PROVIDER:
+		message = setting.GetIdentityProvider()
+	default:
+		return "", errors.New("invalid workspace setting key")
+	}
+	valueBytes, err := protojson.Marshal(message)
+	if err != nil {
+		return "", err
+	}
+	return string(valueBytes), nil
 }
