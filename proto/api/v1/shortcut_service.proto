@@ -23,6 +23,8 @@ service ShortcutService {
   }
   // GetShortcutByName returns a shortcut by name.
   rpc GetShortcutByName(GetShortcutByNameRequest) returns (Shortcut) {}
+  // GetLinkMetadata fetches metadata from a link.
+  rpc GetLinkMetadata(GetLinkMetadataRequest) returns (GetLinkMetadataResponse) {}
   // CreateShortcut creates a shortcut.
   rpc CreateShortcut(CreateShortcutRequest) returns (Shortcut) {
     option (google.api.http) = {
@@ -96,6 +98,14 @@ message GetShortcutRequest {
 
 message GetShortcutByNameRequest {
   string name = 1;
+}
+
+message GetLinkMetadataRequest {
+  string link = 1;
+}
+
+message GetLinkMetadataResponse {
+  string title = 1;
 }
 
 message CreateShortcutRequest {

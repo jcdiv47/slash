@@ -1,11 +1,13 @@
 package httpgetter
 
 import (
-	"errors"
+	"context"
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
+	"github.com/pkg/errors"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
@@ -17,15 +19,31 @@ type HTMLMeta struct {
 }
 
 func GetHTMLMeta(urlStr string) (*HTMLMeta, error) {
-	if _, err := url.Parse(urlStr); err != nil {
+	return GetHTMLMetaWithContext(context.Background(), urlStr)
+}
+
+func GetHTMLMetaWithContext(ctx context.Context, urlStr string) (*HTMLMeta, error) {
+	parsedURL, err := url.ParseRequestURI(urlStr)
+	if err != nil {
 		return nil, err
 	}
+	if (parsedURL.Scheme != "http" && parsedURL.Scheme != "https") || parsedURL.Host == "" {
+		return nil, errors.New("URL must use HTTP or HTTPS")
+	}
 
-	response, err := http.Get(urlStr)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, parsedURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("User-Agent", "Slash link metadata fetcher")
+	response, err := (&http.Client{Timeout: 10 * time.Second}).Do(request)
 	if err != nil {
 		return nil, err
 	}
 	defer response.Body.Close()
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		return nil, errors.Errorf("unexpected HTTP status: %s", response.Status)
+	}
 
 	mediatype, err := getMediatype(response)
 	if err != nil {
@@ -35,8 +53,7 @@ func GetHTMLMeta(urlStr string) (*HTMLMeta, error) {
 		return nil, errors.New("not a HTML page")
 	}
 
-	htmlMeta := extractHTMLMeta(response.Body)
-	return htmlMeta, nil
+	return extractHTMLMeta(io.LimitReader(response.Body, 1<<20)), nil
 }
 
 func extractHTMLMeta(resp io.Reader) *HTMLMeta {

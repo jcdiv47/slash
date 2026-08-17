@@ -925,6 +925,11 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/protobufAny'
+  v1GetLinkMetadataResponse:
+    type: object
+    properties:
+      title:
+        type: string
   v1GetShortcutAnalyticsResponse:
     type: object
     properties:

@@ -72,6 +72,17 @@ column template, so a Row is only meaningful as part of a list — unlike a card
 tile, which stands alone.
 _Avoid_: Line, item, record, entry
 
+**Ownership**:
+Whose Shortcuts a dashboard is showing — all of them, or only the ones the
+current Member created. About authorship, and independent of Visibility.
+_Avoid_: Scope, mine, personal filter
+
+**Site**:
+The Shortcuts that point at one fully qualified domain, rolled up so a Workspace
+can see where its Links actually go. A Site is derived, never stored, and has no
+owner — unlike a Collection.
+_Avoid_: Domain group, host, destination group
+
 **Destructive**:
 An action a Member cannot undo, such as deleting a Shortcut. The canonical term
 for both the confirmation dialog and the styling of the control that triggers it.

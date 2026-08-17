@@ -49,6 +49,8 @@
 - [api/v1/shortcut_service.proto](#api_v1_shortcut_service-proto)
     - [CreateShortcutRequest](#slash-api-v1-CreateShortcutRequest)
     - [DeleteShortcutRequest](#slash-api-v1-DeleteShortcutRequest)
+    - [GetLinkMetadataRequest](#slash-api-v1-GetLinkMetadataRequest)
+    - [GetLinkMetadataResponse](#slash-api-v1-GetLinkMetadataResponse)
     - [GetShortcutAnalyticsRequest](#slash-api-v1-GetShortcutAnalyticsRequest)
     - [GetShortcutAnalyticsResponse](#slash-api-v1-GetShortcutAnalyticsResponse)
     - [GetShortcutAnalyticsResponse.AnalyticsItem](#slash-api-v1-GetShortcutAnalyticsResponse-AnalyticsItem)
@@ -660,6 +662,36 @@
 
 
 
+<a name="slash-api-v1-GetLinkMetadataRequest"></a>
+
+### GetLinkMetadataRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| link | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="slash-api-v1-GetLinkMetadataResponse"></a>
+
+### GetLinkMetadataResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| title | [string](#string) |  |  |
+
+
+
+
+
+
 <a name="slash-api-v1-GetShortcutAnalyticsRequest"></a>
 
 ### GetShortcutAnalyticsRequest
@@ -838,6 +870,7 @@
 | ListShortcuts | [ListShortcutsRequest](#slash-api-v1-ListShortcutsRequest) | [ListShortcutsResponse](#slash-api-v1-ListShortcutsResponse) | ListShortcuts returns a list of shortcuts. |
 | GetShortcut | [GetShortcutRequest](#slash-api-v1-GetShortcutRequest) | [Shortcut](#slash-api-v1-Shortcut) | GetShortcut returns a shortcut by id. |
 | GetShortcutByName | [GetShortcutByNameRequest](#slash-api-v1-GetShortcutByNameRequest) | [Shortcut](#slash-api-v1-Shortcut) | GetShortcutByName returns a shortcut by name. |
+| GetLinkMetadata | [GetLinkMetadataRequest](#slash-api-v1-GetLinkMetadataRequest) | [GetLinkMetadataResponse](#slash-api-v1-GetLinkMetadataResponse) | GetLinkMetadata fetches metadata from a link. |
 | CreateShortcut | [CreateShortcutRequest](#slash-api-v1-CreateShortcutRequest) | [Shortcut](#slash-api-v1-Shortcut) | CreateShortcut creates a shortcut. |
 | UpdateShortcut | [UpdateShortcutRequest](#slash-api-v1-UpdateShortcutRequest) | [Shortcut](#slash-api-v1-Shortcut) | UpdateShortcut updates a shortcut. |
 | DeleteShortcut | [DeleteShortcutRequest](#slash-api-v1-DeleteShortcutRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | DeleteShortcut deletes a shortcut by name. |

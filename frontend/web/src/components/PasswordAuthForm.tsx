@@ -1,8 +1,10 @@
 import { FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import Icon from "@/components/Icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { authServiceClient } from "@/grpcweb";
 import useLoading from "@/hooks/useLoading";
 import useNavigateTo from "@/hooks/useNavigateTo";
@@ -16,16 +18,6 @@ const PasswordAuthForm = () => {
   const [password, setPassword] = useState("");
   const actionBtnLoadingState = useLoading(false);
   const allowConfirm = email.length > 0 && password.length > 0;
-
-  const handleEmailInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const text = e.target.value as string;
-    setEmail(text);
-  };
-
-  const handlePasswordInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const text = e.target.value as string;
-    setPassword(text);
-  };
 
   const handleSigninBtnClick = async (e: FormEvent) => {
     e.preventDefault();
@@ -41,7 +33,7 @@ const PasswordAuthForm = () => {
         await userStore.fetchCurrentUser();
         navigateTo("/");
       } else {
-        toast.error("Signin failed");
+        toast.error("Sign-in failed. Check your email and password.");
       }
     } catch (error: any) {
       console.error(error);
@@ -51,28 +43,32 @@ const PasswordAuthForm = () => {
   };
 
   return (
-    <form className="w-full mt-6" onSubmit={handleSigninBtnClick}>
-      <div className={`flex flex-col justify-start items-start w-full ${actionBtnLoadingState.isLoading ? "opacity-80" : ""}`}>
-        <div className="w-full flex flex-col mb-2">
-          <span className="leading-8 mb-1 text-muted-foreground">{t("common.email")}</span>
-          <Input
-            className="w-full py-3"
-            type="email"
-            value={email}
-            placeholder="slash@yourselfhosted.com"
-            onChange={handleEmailInputChanged}
-          />
-        </div>
-        <div className="w-full flex flex-col mb-2">
-          <span className="leading-8 text-muted-foreground">{t("common.password")}</span>
-          <Input className="w-full py-3" type="password" value={password} placeholder="····" onChange={handlePasswordInputChanged} />
-        </div>
+    <form className="w-full flex flex-col gap-4" onSubmit={handleSigninBtnClick}>
+      <div className="w-full flex flex-col gap-1.5">
+        <Label htmlFor="auth-email">{t("common.email")}</Label>
+        <Input
+          id="auth-email"
+          type="email"
+          value={email}
+          placeholder="slash@yourselfhosted.com"
+          autoComplete="email"
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </div>
-      <div className="w-full flex flex-row justify-end items-center mt-4 space-x-2">
-        <Button className="w-full" type="submit" disabled={actionBtnLoadingState.isLoading || !allowConfirm} onClick={handleSigninBtnClick}>
-          {actionBtnLoadingState.isLoading ? "Loading..." : t("auth.sign-in")}
-        </Button>
+      <div className="w-full flex flex-col gap-1.5">
+        <Label htmlFor="auth-password">{t("common.password")}</Label>
+        <Input
+          id="auth-password"
+          type="password"
+          value={password}
+          autoComplete="current-password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
       </div>
+      <Button className="w-full mt-1" type="submit" disabled={actionBtnLoadingState.isLoading || !allowConfirm}>
+        {actionBtnLoadingState.isLoading && <Icon.LoaderCircle className="animate-spin" />}
+        {t("auth.sign-in")}
+      </Button>
     </form>
   );
 };

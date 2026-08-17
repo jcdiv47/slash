@@ -49,10 +49,5 @@
     "host_permissions": [
       "*://*/*"
     ]
-  },
-  "pnpm": {
-    "overrides": {
-      "@swc/core": "1.5.7"
-    }
   }
 }
